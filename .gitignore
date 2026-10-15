@@ -1,0 +1,122 @@
+# ========================
+# Operating System Files
+# ========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ========================
+# Python / Django
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+*.manifest
+*.spec
+db.sqlite3
+*.sqlite3
+local_settings.py
+staticfiles/
+media/
+
+# ========================
+# Docker
+# ========================
+.dockerignore
+docker-compose.override.yml
+
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.*
+*.env
+secrets.json
+
+# ========================
+# IDE & Editor Files
+# ========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# ========================
+# Node / JavaScript
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+*.pid
+
+# ========================
+# Temporary Files
+# ========================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# ========================
+# Microsoft Office / Docs
+# ========================
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# ========================
+# Compiled Files
+# ========================
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ========================
+# Camunda
+# ========================
+# Keep .bpmn files — do NOT ignore them
+# Ignore any auto-generated local Camunda config
+.camunda/
+camunda-h2-default.mv.db
+camunda-h2-default.trace.db
