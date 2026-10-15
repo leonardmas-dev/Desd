@@ -10,7 +10,7 @@
 
 ## 👥 Team Members
 
-| Name | Role (Catch-Up) | Role (Sprint 2) | Role (Sprint 3) |
+| Name | Role (Sprint 1) | Role (Sprint 2) | Role (Sprint 3) |
 |------|----------------|----------------|----------------|
 | Ahmed | Product Owner | Developer | Scrum Master |
 | Yassen | Scrum Master | Developer | Product Owner |
@@ -51,7 +51,7 @@ The project covers:
 
 | Sprint | Focus | Deadline |
 |--------|-------|----------|
-| ⚡ Catch-Up Sprint | Setup, stakeholder analysis, first drafts | **22 October 2026** |
+| ⚡  Sprint 1 | Setup, stakeholder analysis, first drafts | **22 October 2026** |
 | 📋 Sprint 2 | Finalise models, operational BPMNs, analysis tables | **2 November 2026** |
 | ⏳ Sprint 3 | Camunda implementation, report writing, demo prep | **23 November 2026** |
 
