@@ -33,7 +33,14 @@ Market research identifies three main customer groups in the Bristol area. The w
 
 
 
-## 5. Operational Business Rules for Use Case 1 *(Thierno)*  
+## 5. Operational Business Rules for Use Case 1 *(Thierno)*
+1. **48-Hour Lead Time:** The system enforces a **48-hour order cutoff**. Products listed must reflect stock that can be prepared within this time.
+2. **Automatic Stock Rules:**
+   - **AVAILABLE:** Quantity is greater than 0 AND current date is inside the season window.
+   - **UNAVAILABLE_OUT_OF_STOCK:** Quantity reaches 0 AND current date is inside the season window.
+   - **EXPIRED_OFF_SEASON:** Current date is outside the season window.
+3. **Marketplace Fee:** The system automatically calculates and keeps a **5% commission** on total sales before sending weekly payouts to producers.
+4. **Organic Certificate Check:** Products claimed as organic must be checked against an external verification system. If the checking system is down or times out (503 error), the product is marked as `PENDING_VERIFICATION` and sent for manual admin review so the producer can still finish submitting their product.  
 
 
 
