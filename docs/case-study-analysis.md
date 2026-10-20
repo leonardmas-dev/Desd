@@ -15,7 +15,13 @@ The primary objective of the digital marketplace is to lower administrative barr
 
 
 ## 3. Customer Segment Analysis & Purchasing Barriers *(Thierno)*
+Market research identifies three main customer groups in the Bristol area. The website design directly solves their main shopping problems:
 
+| Customer Group | What They Need | Main Shopping Problems | System Solution (Use Case 1) |
+| :--- | :--- | :--- | :--- |
+| **1. Young Families & Professionals** | Fresh local food; convenient shopping. | Farm shops have short opening hours; driving to multiple farms takes too long. | One online shop, clear harvest dates, single shopping basket, and home delivery options. |
+| **2. Community Groups & Caterers** | Bulk supplies; reliable delivery schedules for schools and care homes. | Hard to find reliable local food suppliers quickly. | Clear live stock levels, best-before dates, and bulk food categories. |
+| **3. Cafés & Restaurants** | High-quality local ingredients; clear farm origins for their menus. | Managing separate orders and invoices with many small farms takes too much time. | All orders combined in one cart with a single invoice and payout system. |
 
 
 
