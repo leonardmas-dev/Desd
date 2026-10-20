@@ -28,7 +28,7 @@ The primary objective of the digital marketplace is to lower administrative barr
 
 
 ## 5. Operational Business Rules for Use Case 1 *(Thierno)*  
-ssssssssssss
+
 
 
 
