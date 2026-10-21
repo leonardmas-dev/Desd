@@ -61,9 +61,3 @@ Software developers working on the BRFN platform follow the four main pillars of
 | **4. Duty to the Profession** | Honest, clear reporting of system capabilities and design decisions. | Maintain clean code repositories and follow proper GitHub version control habits. |
 
 ---
-## 6. Document Sign-Off & Version Control
-
-| Role | Name | Action | Status |
-| :--- | :--- | :--- | :--- |
-| Lead Author | **Thierno** | LESP Research & Analysis | Completed |
-| Peer Reviewer | **Taha** | Requirements Check & Sign-off | Completed |
