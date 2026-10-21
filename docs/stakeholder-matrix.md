@@ -85,5 +85,6 @@ The following business rules govern the logic executed within our BPMN processes
 
 ---
 
-*Authored by Ahmed (Product Owner) & Yassen (Scrum Master)*  
+*Authored by Ahmed (Product Owner) & Yassen (Scrum Master)* 
+*Reviewed and verified by:* Yassen (Scrum Master) - 19 Oct 2026 
 *Bristol Regional Food Network — UFCFTR-30-3 Task 1*
