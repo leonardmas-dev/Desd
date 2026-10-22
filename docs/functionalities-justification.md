@@ -3,7 +3,7 @@
 
 > *Module:* UFCFTR-30-3 Distributed & Enterprise Software Development (2026–27)  
 > *Selected Use Case:* *Use Case 1 — Producer Product Listing and Inventory Management*  
-> *Author:* Yassen (Scrum Master)  
+> *Author:* Yaseen (Scrum Master)  
 > *Reviewed & Approved by:* Ahmed (Product Owner)  
 > *Status:* Agreed & Submitted for Sprint 1 Review  
 
@@ -152,6 +152,6 @@ Use Case 1 (Specification)
 
 ---
 
-Authored by Yassen (Scrum Master)  
+Authored by Yaseen (Scrum Master)  
 Approved by Ahmed (Product Owner)  
 Bristol Regional Food Network — UFCFTR-30-3 Task 1
