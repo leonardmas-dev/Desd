@@ -10,7 +10,7 @@ Submission Deadline: 10th December 2026, 14:00 (via GitHub repository)
 👥 Team Members & Sprint Roles
 Name	Sprint 1 (Strategic & Setup)	Sprint 2 (Operational & Initial Automation)	Sprint 3 (Integration & Demo)
 Ahmed	Scrum Master	Developer	Developer
-Yassen	Product Owner	Developer	Scrum Master
+Yaseen	Product Owner	Developer	Scrum Master
 Taha	Developer	Product Owner	Developer
 Leonard	Developer	Scrum Master	Developer
 Thierno	Developer	Developer	Product Owner
