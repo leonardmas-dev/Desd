@@ -3,7 +3,7 @@
 
 > **Module:** UFCFTR-30-3 Distributed & Enterprise Software Development (2026–27)  
 > **Use Case:** **Use Case 1 — Producer Product Listing and Inventory Management**  
-> **Document Leads:** Ahmed (Product Owner) & Yassen (Scrum Master)  
+> **Document Leads:** Ahmed (Scrum Master) & Yassen (Product Owner)  
 > **Traceability:** Aligns directly with [`strategic-enterprise.bpmn`](../bpmn/strategic-enterprise.bpmn)  
 
 ---
@@ -85,6 +85,6 @@ The following business rules govern the logic executed within our BPMN processes
 
 ---
 
-*Authored by Ahmed (Product Owner) & Yassen (Scrum Master)* 
-*Reviewed and verified by:* Yassen (Scrum Master) - 19 Oct 2026 
+*Authored by Ahmed (Scrum Master) & Yassen (Product Owner)* 
+*Reviewed and verified by:* Yassen (Product Owner) - 19 Oct 2026 
 *Bristol Regional Food Network — UFCFTR-30-3 Task 1*

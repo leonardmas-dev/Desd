@@ -9,11 +9,11 @@ Submission Deadline: 10th December 2026, 14:00 (via GitHub repository)
 
 👥 Team Members & Sprint Roles
 Name	Sprint 1 (Strategic & Setup)	Sprint 2 (Operational & Initial Automation)	Sprint 3 (Integration & Demo)
-Ahmed	Scrum Master	Developer	Product Owner
-Yassen	Product Owner	Developer	Developer
+Ahmed	Scrum Master	Developer	Developer
+Yassen	Product Owner	Developer	Scrum Master
 Taha	Developer	Product Owner	Developer
 Leonard	Developer	Scrum Master	Developer
-Thierno	Developer	Developer	Scrum Master / Developer
+Thierno	Developer	Developer	Product Owner
 📌 Project Overview: Bristol Regional Food Network
 
 The Bristol Regional Food Network is a digital marketplace connecting 40 local small-to-medium food producers (within a 20-mile radius of Bristol) with local consumers, community groups, and restaurants.
