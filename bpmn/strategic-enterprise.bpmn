@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  id="Definitions_Strategic"
+  targetNamespace="http://bpmn.io/schema/bpmn"
+  exporter="Camunda Modeler" exporterVersion="5.28.0"
+  modeler:executionPlatform="Camunda Cloud"
+  modeler:executionPlatformVersion="8.5.0">
+
+  <bpmn:collaboration id="Collaboration_Strategic">
+    <bpmn:participant id="Pool_Producers" name="Local Food Producers (40 SMEs — Farms, Dairies, Bakeries)" />
+    <bpmn:participant id="Pool_Marketplace" name="Bristol Regional Food Network — Digital Marketplace Platform" processRef="Process_Strategic" />
+    <bpmn:participant id="Pool_Customers" name="Customers (Families, Community Catering Groups, Restaurants)" />
+    <bpmn:participant id="Pool_External" name="External Services (Soil Association UK &amp; Stripe Payment Gateway)" />
+
+    <!-- MESSAGE FLOWS -->
+    <bpmn:messageFlow id="Msg_SubmitListing"  name="Submit Product Listing"          sourceRef="Pool_Producers"   targetRef="Task_Listings" />
+    <bpmn:messageFlow id="Msg_StockUpdate"    name="Submit Stock Update"             sourceRef="Pool_Producers"   targetRef="Task_Inventory" />
+    <bpmn:messageFlow id="Msg_VerifyCert"     name="Verify Organic Certification"    sourceRef="Task_Quality"     targetRef="Pool_External" />
+    <bpmn:messageFlow id="Msg_CertResult"     name="Certification Result"            sourceRef="Pool_External"    targetRef="Task_Quality" />
+    <bpmn:messageFlow id="Msg_Browse"         name="Browse Products"                 sourceRef="Pool_Customers"   targetRef="Task_Catalogue" />
+    <bpmn:messageFlow id="Msg_Alerts"         name="Availability Alerts"             sourceRef="Task_Catalogue"   targetRef="Pool_Customers" />
+    <bpmn:messageFlow id="Msg_PlaceOrder"     name="Place Order"                     sourceRef="Pool_Customers"   targetRef="Task_Orders" />
+    <bpmn:messageFlow id="Msg_OrderAlloc"     name="Order Notification (48h Lead)"   sourceRef="Task_Orders"      targetRef="Pool_Producers" />
+    <bpmn:messageFlow id="Msg_SendPayment"    name="Process Payment"                 sourceRef="Task_Settlement"  targetRef="Pool_External" />
+    <bpmn:messageFlow id="Msg_PayConfirm"     name="Payment Confirmation"            sourceRef="Pool_External"    targetRef="Task_Settlement" />
+    <bpmn:messageFlow id="Msg_Payout"         name="Weekly Payout (95%)"             sourceRef="Task_Settlement"  targetRef="Pool_Producers" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Strategic" name="Bristol Food Network — Strategic Enterprise Process" isExecutable="true">
+    <bpmn:laneSet id="LS1">
+      <bpmn:lane id="Lane_Product" name="Product &amp; Catalogue Management">
+        <bpmn:flowNodeRef>Start_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Listings</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Quality</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Catalogue</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Inventory" name="Inventory &amp; Seasonal Lifecycle">
+        <bpmn:flowNodeRef>Task_Inventory</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_OrderFin" name="Order Processing &amp; Financial Settlement">
+        <bpmn:flowNodeRef>Task_Orders</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Settlement</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_1</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="Start_1" name="Producer Joins Network">
+      <bpmn:outgoing>F1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Listings" name="Manage Product Listings">
+      <bpmn:incoming>F1</bpmn:incoming>
+      <bpmn:outgoing>F2</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Quality" name="Quality Assurance &amp; Compliance">
+      <bpmn:incoming>F2</bpmn:incoming>
+      <bpmn:outgoing>F3</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Catalogue" name="Publish to Live Catalogue">
+      <bpmn:incoming>F3</bpmn:incoming>
+      <bpmn:outgoing>F4</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Orders" name="Process Customer Orders">
+      <bpmn:incoming>F4</bpmn:incoming>
+      <bpmn:outgoing>F5</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Inventory" name="Manage Inventory &amp; Seasonal Lifecycle">
+      <bpmn:incoming>F5</bpmn:incoming>
+      <bpmn:outgoing>F6</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Settlement" name="Financial Settlement &amp; Payouts">
+      <bpmn:incoming>F6</bpmn:incoming>
+      <bpmn:outgoing>F7</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="End_1" name="Cycle Complete">
+      <bpmn:incoming>F7</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="F1" sourceRef="Start_1"        targetRef="Task_Listings" />
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_Listings"   targetRef="Task_Quality" />
+    <bpmn:sequenceFlow id="F3" sourceRef="Task_Quality"    targetRef="Task_Catalogue" />
+    <bpmn:sequenceFlow id="F4" sourceRef="Task_Catalogue"  targetRef="Task_Orders" />
+    <bpmn:sequenceFlow id="F5" sourceRef="Task_Orders"     targetRef="Task_Inventory" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Task_Inventory"  targetRef="Task_Settlement" />
+    <bpmn:sequenceFlow id="F7" sourceRef="Task_Settlement" targetRef="End_1" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_Strategic">
+
+      <!-- === POOLS === -->
+      <bpmndi:BPMNShape id="S_Producers" bpmnElement="Pool_Producers" isHorizontal="true">
+        <dc:Bounds x="160" y="40" width="1720" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Marketplace" bpmnElement="Pool_Marketplace" isHorizontal="true">
+        <dc:Bounds x="160" y="150" width="1720" height="530" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Lane1" bpmnElement="Lane_Product" isHorizontal="true">
+        <dc:Bounds x="190" y="150" width="1690" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Lane2" bpmnElement="Lane_Inventory" isHorizontal="true">
+        <dc:Bounds x="190" y="350" width="1690" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Lane3" bpmnElement="Lane_OrderFin" isHorizontal="true">
+        <dc:Bounds x="190" y="490" width="1690" height="190" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Customers" bpmnElement="Pool_Customers" isHorizontal="true">
+        <dc:Bounds x="770" y="720" width="470" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_External" bpmnElement="Pool_External" isHorizontal="true">
+        <dc:Bounds x="160" y="820" width="1720" height="60" />
+      </bpmndi:BPMNShape>
+
+      <!-- === FLOW NODES (Each in its own vertical X column so zero message lines cross tasks) === -->
+
+      <!-- Start -->
+      <bpmndi:BPMNShape id="S_Start" bpmnElement="Start_1">
+        <dc:Bounds x="242" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="218" y="275" width="84" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task 1: Manage Listings (x=330..500) -->
+      <bpmndi:BPMNShape id="S_T1" bpmnElement="Task_Listings">
+        <dc:Bounds x="330" y="210" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 2: Quality Assurance (x=560..730) -->
+      <bpmndi:BPMNShape id="S_T2" bpmnElement="Task_Quality">
+        <dc:Bounds x="560" y="210" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 3: Catalogue (x=790..960) -->
+      <bpmndi:BPMNShape id="S_T3" bpmnElement="Task_Catalogue">
+        <dc:Bounds x="790" y="210" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 4: Process Orders (x=1030..1200, Lane 3) -->
+      <bpmndi:BPMNShape id="S_T4" bpmnElement="Task_Orders">
+        <dc:Bounds x="1030" y="545" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 5: Manage Inventory (x=1270..1440, Lane 2) -->
+      <bpmndi:BPMNShape id="S_T5" bpmnElement="Task_Inventory">
+        <dc:Bounds x="1270" y="380" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 6: Financial Settlement (x=1510..1680, Lane 3) -->
+      <bpmndi:BPMNShape id="S_T6" bpmnElement="Task_Settlement">
+        <dc:Bounds x="1510" y="545" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- End -->
+      <bpmndi:BPMNShape id="S_End" bpmnElement="End_1">
+        <dc:Bounds x="1752" y="567" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1732" y="610" width="76" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- === SEQUENCE FLOWS === -->
+
+      <bpmndi:BPMNEdge id="E_F1" bpmnElement="F1">
+        <di:waypoint x="278" y="250" />
+        <di:waypoint x="330" y="250" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_F2" bpmnElement="F2">
+        <di:waypoint x="500" y="250" />
+        <di:waypoint x="560" y="250" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_F3" bpmnElement="F3">
+        <di:waypoint x="730" y="250" />
+        <di:waypoint x="790" y="250" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_F4" bpmnElement="F4">
+        <di:waypoint x="960" y="250" />
+        <di:waypoint x="995" y="250" />
+        <di:waypoint x="995" y="585" />
+        <di:waypoint x="1030" y="585" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_F5" bpmnElement="F5">
+        <di:waypoint x="1200" y="585" />
+        <di:waypoint x="1235" y="585" />
+        <di:waypoint x="1235" y="420" />
+        <di:waypoint x="1270" y="420" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_F6" bpmnElement="F6">
+        <di:waypoint x="1440" y="420" />
+        <di:waypoint x="1475" y="420" />
+        <di:waypoint x="1475" y="585" />
+        <di:waypoint x="1510" y="585" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_F7" bpmnElement="F7">
+        <di:waypoint x="1680" y="585" />
+        <di:waypoint x="1752" y="585" />
+      </bpmndi:BPMNEdge>
+
+      <!-- === MESSAGE FLOWS (100% straight vertical highways with explicit non-overlapping labels) === -->
+
+      <bpmndi:BPMNEdge id="E_Msg1" bpmnElement="Msg_SubmitListing">
+        <di:waypoint x="415" y="100" />
+        <di:waypoint x="415" y="210" />
+        <bpmndi:BPMNLabel><dc:Bounds x="345" y="120" width="140" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg3" bpmnElement="Msg_VerifyCert">
+        <di:waypoint x="600" y="290" />
+        <di:waypoint x="600" y="820" />
+        <bpmndi:BPMNLabel><dc:Bounds x="505" y="700" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg4" bpmnElement="Msg_CertResult">
+        <di:waypoint x="690" y="820" />
+        <di:waypoint x="690" y="290" />
+        <bpmndi:BPMNLabel><dc:Bounds x="698" y="700" width="65" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg5" bpmnElement="Msg_Browse">
+        <di:waypoint x="835" y="720" />
+        <di:waypoint x="835" y="290" />
+        <bpmndi:BPMNLabel><dc:Bounds x="745" y="690" width="85" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg6" bpmnElement="Msg_Alerts">
+        <di:waypoint x="915" y="290" />
+        <di:waypoint x="915" y="720" />
+        <bpmndi:BPMNLabel><dc:Bounds x="922" y="690" width="88" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg7" bpmnElement="Msg_PlaceOrder">
+        <di:waypoint x="1115" y="720" />
+        <di:waypoint x="1115" y="625" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1123" y="665" width="62" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg8" bpmnElement="Msg_OrderAlloc">
+        <di:waypoint x="1115" y="545" />
+        <di:waypoint x="1115" y="100" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1020" y="115" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg2" bpmnElement="Msg_StockUpdate">
+        <di:waypoint x="1355" y="100" />
+        <di:waypoint x="1355" y="380" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1245" y="120" width="105" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg9" bpmnElement="Msg_SendPayment">
+        <di:waypoint x="1555" y="625" />
+        <di:waypoint x="1555" y="820" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1460" y="705" width="88" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg10" bpmnElement="Msg_PayConfirm">
+        <di:waypoint x="1640" y="820" />
+        <di:waypoint x="1640" y="625" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1648" y="700" width="65" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E_Msg11" bpmnElement="Msg_Payout">
+        <di:waypoint x="1595" y="545" />
+        <di:waypoint x="1595" y="100" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1605" y="115" width="75" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
