@@ -41,7 +41,7 @@ Market research identifies three main customer groups in the Bristol area. The w
 | **Geography** | Producers must be within a 20-mile radius of Bristol. | Eligibility check at onboarding (e.g. by postcode). Producers outside the radius are rejected. |
 | **Product categories** |  | Categories drive the listing form fields and the bulk-buy filter for caterers. |
 | **Seasonality** | Produce has seasonal lifecycles. | Each product carries a season window, which drives the AVAILABLE and EXPIRED_OFF_SEASON states in Section 5. |
-| **Commission** | 5% platform commission on sales. | Calculated automatically before weekly payouts (Section 5, rule 3). |
+| **Commission** | 5% platform commission on sales. | Calculated automatically before weekly payouts . |
 
 **Forces that justify a distributed design (Week 8):** ownership (independent producers), geography (20-mile local network), scale (seasonal demand peaks) and failure isolation (the external organic certification API can time out without stopping product submission).
 
