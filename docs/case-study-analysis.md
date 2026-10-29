@@ -15,7 +15,7 @@ The 40 producers are independent SMEs, not BRFN staff, so the platform cannot as
 | :--- | :--- | :--- |
 | **Digital literacy** | Low | Product submission must be a short, simple web form with plain-language labels and error messages that explain how to fix the problem. |
 | **Current workflow** | Manual phone and email handling, about 15 hours per week | This is the baseline the system must reduce. Listing and stock updates move online. The reduction target is to be agreed with the tutor. |
-| **Order lead time** | 48 hours needed to prepare orders | Enforced by the system as a cutoff (see Section 5, rule 1). |
+| **Order lead time** | 48 hours needed to prepare orders | Enforced by the system as a cutoff . |
 | **Devices and connectivity** | Not assessed; assumed basic devices and variable connectivity | The form should work on mobile and cope with a slow connection. |
 
 **Requirements derived from the producer profile**
@@ -39,7 +39,7 @@ Market research identifies three main customer groups in the Bristol area. The w
 | Boundary | Detail | Effect on the system |
 | :--- | :--- | :--- |
 | **Geography** | Producers must be within a 20-mile radius of Bristol. | Eligibility check at onboarding (e.g. by postcode). Producers outside the radius are rejected. |
-| **Product categories** | [ADD category list from the case study] | Categories drive the listing form fields and the bulk-buy filter for caterers. |
+| **Product categories** |  | Categories drive the listing form fields and the bulk-buy filter for caterers. |
 | **Seasonality** | Produce has seasonal lifecycles. | Each product carries a season window, which drives the AVAILABLE and EXPIRED_OFF_SEASON states in Section 5. |
 | **Commission** | 5% platform commission on sales. | Calculated automatically before weekly payouts (Section 5, rule 3). |
 
