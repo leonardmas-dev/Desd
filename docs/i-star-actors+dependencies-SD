@@ -1,0 +1,83 @@
+# i* Strategic Dependency (SD) — Actors and Dependencies
+**Author:** Yaseen
+
+I identified the main actors and listed what each depends on for Use Case 1. I based this on our Sprint 1 stakeholder analysis, the case study and our two chosen functionalities. This list will help draw the SD diagram.
+
+## Actors
+
+- **Producer:** Submits product details and updates stock and seasonal availability.
+- **Marketplace System:** Validates and publishes products, checks certification, and manages availability.
+- **Marketplace Administrator:** Oversees listings and handles cases needing manual review.
+- **External Organic Certification Verification Service:** Checks organic claims (external or simulated service).
+- **Customer:** Uses product details and availability information.
+
+**Scope:** Use Case 1 — Product Listing and Inventory Management. The payment gateway and 5% commission relate mainly to wider checkout/payment functionality.
+
+## Dependencies
+
+Format: **ID | Depender → Dependee | Dependum [type] | Why this dependency exists / traceability**
+
+### A. Product submission and validation
+
+**SD-01 | Producer → Marketplace System | Product successfully listed [Goal]**  
+The producer relies on the platform to turn a valid submission into a discoverable product listing. (Use Case 1: publication after validation; Functionality A.)
+
+**SD-02 | Marketplace System → Producer | Complete product submission data [Resource]**  
+The platform needs product name, description, category, price, quantity, availability period, farm origin, and relevant harvest, allergen, certification and best-before details from the producer. (Use Case 1; stakeholder matrix BR-01.)
+
+**SD-03 | Producer → Marketplace System | Clear validation feedback [Resource]**  
+If submitted information is missing or invalid, the producer needs actionable feedback explaining what to correct. (Use Case 1 validation-failure path; case-study analysis usability needs.)
+
+**SD-04 | Marketplace System → Producer | Corrected product information [Resource]**  
+The system relies on the producer to correct invalid or missing details before publication can proceed. (Use Case 1; Functionality A correction loop.)
+
+**SD-05 | Marketplace Administrator → Marketplace System | Accurate and compliant product catalogue [Goal]**  
+Operations relies on the platform's checks and publication rules to maintain catalogue quality and reduce misleading product information. (Stakeholder matrix; LESP analysis.)
+
+### B. Organic certification and exception handling
+
+**SD-06 | Marketplace System → External Organic Certification Verification Service | Organic claim checked [Task]**  
+Where a producer claims organic status, the system relies on an external/simulated verifier to assess the claim. (Use Case 1; stakeholder matrix BR-02; Functionality A.)
+
+**SD-07 | Marketplace System → External Organic Certification Verification Service | Certification verification result [Resource]**  
+The system needs a result indicating whether the claimed certificate is valid, invalid, expired or unable to be checked. This is distinct from the verification activity itself. (Functionality A; external-service failure requirement.)
+
+**SD-08 | External Organic Certification Verification Service → Marketplace System | Certification details submitted for checking [Resource]**  
+The verifier needs the relevant submitted licence/claim details to assess a request. This represents the service interaction, not a claim that the certifier depends on the marketplace for its wider organisational goals. (Stakeholder matrix BR-02; proposed API interaction.)
+
+**SD-09 | Marketplace System → Marketplace Administrator | Unresolved verification case reviewed [Task]**  
+If the verification service is unavailable or a case cannot be resolved automatically, the platform relies on administrator intervention under the group's proposed exception policy. (Functionality A; stakeholder matrix BR-02.)
+
+**SD-10 | Producer → Marketplace System | Trustworthy organic-claim status [Goal]**  
+The producer needs the platform to display organic status only when justified, or to communicate that verification is pending/rejected. (Use Case 1; LESP analysis.)
+
+### C. Inventory and seasonal availability
+
+**SD-11 | Producer → Marketplace System | Product stock and seasonal availability maintained [Goal]**  
+The producer relies on the platform to reflect inventory and seasonal changes without manual catalogue management. (Use Case 1; Functionality B.)
+
+**SD-12 | Marketplace System → Producer | Updated quantity and seasonal dates [Resource]**  
+The system relies on producer-supplied replenishment quantities and updated availability information. (Use Case 1; stakeholder matrix BR-04; Functionality B.)
+
+**SD-13 | Producer → Marketplace System | Out-of-stock products made unavailable [Goal]**  
+The producer relies on automatic removal from customer availability when stock reaches zero, reducing overselling. (Use Case 1; stakeholder matrix BR-03.)
+
+**SD-14 | Producer → Marketplace System | Eligible replenished products made available again [Goal]**  
+The producer relies on the platform to republish replenished items **only when still within their permitted seasonal availability window**. (Use Case 1; stakeholder matrix BR-04.)
+
+**SD-15 | Marketplace Administrator → Marketplace System | Reliable inventory and seasonal status [Goal]**  
+Operations depends on the system to apply stock and seasonal rules consistently, including withdrawing expired products. (Stakeholder matrix; Functionality B.)
+
+### D. Customer trust and marketplace outcomes
+
+**SD-16 | Customer → Marketplace System | Accurate product information [Resource]**  
+Customers need category, origin, price, harvest/best-before information where relevant, allergen details and organic-claim status to make informed choices. (Case study customer requirements; Use Case 1; LESP.)
+
+**SD-17 | Customer → Marketplace System | Current product availability [Goal]**  
+Customers depend on the platform to show only products that can currently be offered, taking account of stock and seasonality. (Use Case 1; Functionality B.)
+
+**SD-18 | Customer → Marketplace System | Trustworthy food safety and provenance information [Softgoal]**  
+Customers expect confidence in allergen declarations, local origin and organic claims. This is a quality expectation supported by validation and verification, not a guarantee that every product is risk-free. (Case study; stakeholder matrix; LESP.)
+
+**SD-19 | Producer → Marketplace System | Easy-to-use product management [Softgoal]**  
+Producers with varied digital skills depend on a usable submission/restock experience that reduces manual work. (Case study producer profile; case-study analysis.)
