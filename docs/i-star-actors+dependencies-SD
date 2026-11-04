@@ -48,8 +48,8 @@ The verifier needs the relevant submitted licence/claim details to assess a requ
 **SD-09 | Marketplace System → Marketplace Administrator | Unresolved verification case reviewed [Task]**  
 If the verification service is unavailable or a case cannot be resolved automatically, the platform relies on administrator intervention under the group's proposed exception policy. (Functionality A; stakeholder matrix BR-02.)
 
-**SD-10 | Producer → Marketplace System | Trustworthy organic-claim status [Goal]**  
-The producer needs the platform to display organic status only when justified, or to communicate that verification is pending/rejected. (Use Case 1; LESP analysis.)
+**SD-10 | Producer → Marketplace System | Organic status only shown when verified [Goal]**  
+The producer needs the platform to display organic status only after certification check succeeds, or to communicate that verification is pending/rejected. (Use Case 1; LESP analysis.)
 
 ### C. Inventory and seasonal availability
 
