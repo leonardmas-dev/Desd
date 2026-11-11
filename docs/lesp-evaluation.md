@@ -32,7 +32,7 @@ Use Case 1 (Producer Product Listing and Inventory Management) involves handling
 
 ### 3.1 Preventing False Organic Claims 
 * **Automatic Certificate Verification:** To protect buyers from false organic claims, any producer ticking "Certified Organic" must provide a valid licence number. The system checks this number against an official certifier database (such as the Soil Association UK).
-* **Backup Error Rule:** If the verification checking system is offline or times out (503 error), the system does not give organic status by default. Instead, the item is published under a `PENDING_VERIFICATION` status without an organic badge until an admin reviews it.
+* **Verification Failure Rule:** If organic certification is claimed and the verification service is unavailable, the listing remains unpublished until certification has been successfully verified and all required validation checks have passed
 
 ### 3.2 Fair Platform Pricing & Small Business Protection
 * **Fixed 5% Commission:** Platform fees are capped at a clear 5% commission. This ensures small local farms keep 95% of their sales to support their business.
