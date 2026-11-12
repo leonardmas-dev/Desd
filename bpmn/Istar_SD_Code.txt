@@ -146,7 +146,7 @@
       "id": "b55a736b-556a-4e55-b7bf-401b27b94a58",
       "text": "Clear Validation Feedback",
       "type": "istar.Resource",
-      "x": 571,
+      "x": 540,
       "y": 119,
       "customProperties": {
         "Description": "SD-03"
@@ -194,7 +194,7 @@
       "id": "1ec21507-08fa-40b6-88f1-edc6223080ff",
       "text": "Certification Details Submitted For Checking",
       "type": "istar.Resource",
-      "x": 535,
+      "x": 500,
       "y": 463,
       "customProperties": {
         "Description": "SD-08"
@@ -543,12 +543,12 @@
       "height": 51.125
     },
     "7fe1c94a-b9da-46bb-970b-f8e336280f25": {
-      "width": 103.25,
-      "height": 42.125
+      "width": 115,
+      "height": 62
     },
     "b55a736b-556a-4e55-b7bf-401b27b94a58": {
-      "width": 102.25,
-      "height": 43.125
+      "width": 125,
+      "height": 43
     },
     "a2a01684-3975-4e03-8230-691e045dc87b": {
       "width": 88.276611328125,
@@ -563,12 +563,12 @@
       "height": 57.125
     },
     "1ec21507-08fa-40b6-88f1-edc6223080ff": {
-      "width": 106.25,
-      "height": 54.125
+      "width": 130,
+      "height": 75
     },
     "d7397dc5-9093-480c-8b41-d059a303998b": {
-      "width": 101.28021240234375,
-      "height": 63.71908950805664
+      "width": 130,
+      "height": 70
     },
     "d06547e5-113c-49ab-8bec-082a8cd8ffa4": {
       "width": 97.25,
@@ -579,8 +579,8 @@
       "height": 54.125
     },
     "2f979215-9dfb-4df9-9e24-5fda7723624c": {
-      "width": 89.25,
-      "height": 52.125
+      "width": 110,
+      "height": 70
     },
     "b11122ab-debe-4138-a6c5-7e6b13df6009": {
       "width": 90.25,

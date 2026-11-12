@@ -1,0 +1,463 @@
+{
+  "actors": [
+    {
+      "id": "SR_Marketplace",
+      "type": "istar.Agent",
+      "text": "Marketplace System",
+      "x": 500,
+      "y": 80,
+      "nodes": [
+        {
+          "id": "G_Main",
+          "text": "Products listed accurately and available",
+          "type": "istar.Goal",
+          "x": 1330,
+          "y": 170,
+          "customProperties": {
+            "SD Traceability": "SD-01, SD-05, SD-11, SD-17",
+            "BPMN Traceability": "Strategic Task_Listings, Task_Catalogue, Task_Inventory"
+          }
+        },
+        {
+          "id": "T_Manage",
+          "text": "Manage product listing and availability",
+          "type": "istar.Task",
+          "x": 1330,
+          "y": 360,
+          "customProperties": {
+            "SD Traceability": "SD-01, SD-05, SD-11, SD-17",
+            "BPMN Traceability": "Validation process and inventory process"
+          }
+        },
+        {
+          "id": "G_Details",
+          "text": "Product details validated",
+          "type": "istar.Goal",
+          "x": 640,
+          "y": 600,
+          "customProperties": {
+            "SD Traceability": "SD-02, SD-03, SD-04, SD-05, SD-16",
+            "BPMN Traceability": "Task_ValidateDetails; Task_RequestCorrection"
+          }
+        },
+        {
+          "id": "G_Cert",
+          "text": "Certification verified when claimed",
+          "type": "istar.Goal",
+          "x": 1100,
+          "y": 600,
+          "customProperties": {
+            "SD Traceability": "SD-06, SD-07, SD-08, SD-10",
+            "BPMN Traceability": "Gateway_OrganicClaim; Task_VerifyCertification"
+          }
+        },
+        {
+          "id": "G_Availability",
+          "text": "Availability kept up to date",
+          "type": "istar.Goal",
+          "x": 1620,
+          "y": 600,
+          "customProperties": {
+            "SD Traceability": "SD-11, SD-12, SD-13, SD-14, SD-15, SD-17",
+            "BPMN Traceability": "Inventory process handoff"
+          }
+        },
+        {
+          "id": "T_Publish",
+          "text": "Publish product after required checks",
+          "type": "istar.Task",
+          "x": 2150,
+          "y": 600,
+          "customProperties": {
+            "SD Traceability": "SD-01, SD-05, SD-10",
+            "BPMN Traceability": "Task_PublishProduct"
+          }
+        },
+        {
+          "id": "T_Check",
+          "text": "Validate details and request corrections when invalid",
+          "type": "istar.Task",
+          "x": 640,
+          "y": 840,
+          "customProperties": {
+            "SD Traceability": "SD-02, SD-03, SD-04",
+            "BPMN Traceability": "Task_ValidateDetails; Task_RequestCorrection; Catch_CorrectedDetails"
+          }
+        },
+        {
+          "id": "T_Verify",
+          "text": "Check claimed certification with external or simulated service",
+          "type": "istar.Task",
+          "x": 1100,
+          "y": 840,
+          "customProperties": {
+            "SD Traceability": "SD-06, SD-07, SD-08, SD-10",
+            "BPMN Traceability": "Task_VerifyCertification"
+          }
+        },
+        {
+          "id": "T_Inventory",
+          "text": "Maintain stock and seasonal availability",
+          "type": "istar.Task",
+          "x": 1620,
+          "y": 840,
+          "customProperties": {
+            "SD Traceability": "SD-11, SD-12, SD-13, SD-14, SD-15, SD-17",
+            "BPMN Traceability": "Inventory process handoff"
+          }
+        },
+        {
+          "id": "T_Apply",
+          "text": "Apply producer quantity and availability updates",
+          "type": "istar.Task",
+          "x": 1370,
+          "y": 1100,
+          "customProperties": {
+            "SD Traceability": "SD-11, SD-12",
+            "BPMN Traceability": "Inventory update task"
+          }
+        },
+        {
+          "id": "T_Zero",
+          "text": "Make products unavailable when stock reaches zero",
+          "type": "istar.Task",
+          "x": 1650,
+          "y": 1280,
+          "customProperties": {
+            "SD Traceability": "SD-13, SD-17",
+            "BPMN Traceability": "Inventory zero-stock decision"
+          }
+        },
+        {
+          "id": "T_Reopen",
+          "text": "Restore replenished stock within its availability period",
+          "type": "istar.Task",
+          "x": 1920,
+          "y": 1100,
+          "customProperties": {
+            "SD Traceability": "SD-14, SD-17",
+            "BPMN Traceability": "Inventory seasonal replenishment decision"
+          }
+        }
+      ],
+      "customProperties": {
+        "SD actor": "BRFN Platform"
+      }
+    },
+    {
+      "id": "a2caa69e-a348-4442-98ef-2a6f3f0973ae",
+      "text": "Producer",
+      "type": "istar.Actor",
+      "x": 70,
+      "y": 460,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": []
+    },
+    {
+      "id": "b564cede-fa08-46df-8604-916fe1798f8d",
+      "text": "External Organic Certification Verification Service",
+      "type": "istar.Actor",
+      "x": 100,
+      "y": 1100,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": []
+    },
+    {
+      "id": "747a5c4f-5f52-49ca-b4c7-67bdee765bc4",
+      "text": "Customer",
+      "type": "istar.Actor",
+      "x": 2630,
+      "y": 470,
+      "customProperties": {
+        "Description": ""
+      },
+      "nodes": []
+    }
+  ],
+  "orphans": [],
+  "dependencies": [
+    {
+      "id": "4f91b182-00c2-4520-b033-874de69cb341",
+      "text": "Product Successfully Listed",
+      "type": "istar.Goal",
+      "x": 300,
+      "y": 180,
+      "customProperties": {
+        "Description": "SD-01"
+      },
+      "source": "a2caa69e-a348-4442-98ef-2a6f3f0973ae",
+      "target": "G_Main"
+    },
+    {
+      "id": "7fe1c94a-b9da-46bb-970b-f8e336280f25",
+      "text": "Complete Product Submission Data",
+      "type": "istar.Resource",
+      "x": 300,
+      "y": 680,
+      "customProperties": {
+        "Description": "SD-02"
+      },
+      "source": "T_Check",
+      "target": "a2caa69e-a348-4442-98ef-2a6f3f0973ae"
+    },
+    {
+      "id": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
+      "text": "Organic Claim Checked",
+      "type": "istar.Task",
+      "x": 300,
+      "y": 1180,
+      "customProperties": {
+        "Description": "SD-06"
+      },
+      "source": "T_Verify",
+      "target": "b564cede-fa08-46df-8604-916fe1798f8d"
+    },
+    {
+      "id": "2f979215-9dfb-4df9-9e24-5fda7723624c",
+      "text": "Updated Quantity And Seasonal Dates",
+      "type": "istar.Resource",
+      "x": 300,
+      "y": 1000,
+      "customProperties": {
+        "Description": "SD-12"
+      },
+      "source": "T_Apply",
+      "target": "a2caa69e-a348-4442-98ef-2a6f3f0973ae"
+    },
+    {
+      "id": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
+      "text": "Current Product Availability",
+      "type": "istar.Goal",
+      "x": 2440,
+      "y": 820,
+      "customProperties": {
+        "Description": "SD-17"
+      },
+      "source": "747a5c4f-5f52-49ca-b4c7-67bdee765bc4",
+      "target": "G_Availability"
+    }
+  ],
+  "links": [
+    {
+      "id": "L_T_Manage_G_Main",
+      "type": "istar.OrRefinementLink",
+      "source": "T_Manage",
+      "target": "G_Main"
+    },
+    {
+      "id": "L_G_Details_T_Manage",
+      "type": "istar.AndRefinementLink",
+      "source": "G_Details",
+      "target": "T_Manage"
+    },
+    {
+      "id": "L_G_Cert_T_Manage",
+      "type": "istar.AndRefinementLink",
+      "source": "G_Cert",
+      "target": "T_Manage"
+    },
+    {
+      "id": "L_G_Availability_T_Manage",
+      "type": "istar.AndRefinementLink",
+      "source": "G_Availability",
+      "target": "T_Manage"
+    },
+    {
+      "id": "L_T_Publish_T_Manage",
+      "type": "istar.AndRefinementLink",
+      "source": "T_Publish",
+      "target": "T_Manage"
+    },
+    {
+      "id": "L_T_Check_G_Details",
+      "type": "istar.OrRefinementLink",
+      "source": "T_Check",
+      "target": "G_Details"
+    },
+    {
+      "id": "L_T_Verify_G_Cert",
+      "type": "istar.OrRefinementLink",
+      "source": "T_Verify",
+      "target": "G_Cert"
+    },
+    {
+      "id": "L_T_Inventory_G_Availability",
+      "type": "istar.OrRefinementLink",
+      "source": "T_Inventory",
+      "target": "G_Availability"
+    },
+    {
+      "id": "L_T_Apply_T_Inventory",
+      "type": "istar.AndRefinementLink",
+      "source": "T_Apply",
+      "target": "T_Inventory"
+    },
+    {
+      "id": "L_T_Zero_T_Inventory",
+      "type": "istar.AndRefinementLink",
+      "source": "T_Zero",
+      "target": "T_Inventory"
+    },
+    {
+      "id": "L_T_Reopen_T_Inventory",
+      "type": "istar.AndRefinementLink",
+      "source": "T_Reopen",
+      "target": "T_Inventory"
+    },
+    {
+      "id": "D_SD-01_a2caa69e-a348-4442-98ef-2a6f3f0973ae_4f91b182-00c2-4520-b033-874de69cb341",
+      "type": "istar.DependencyLink",
+      "source": "a2caa69e-a348-4442-98ef-2a6f3f0973ae",
+      "target": "4f91b182-00c2-4520-b033-874de69cb341"
+    },
+    {
+      "id": "D_SD-01_4f91b182-00c2-4520-b033-874de69cb341_G_Main",
+      "type": "istar.DependencyLink",
+      "source": "4f91b182-00c2-4520-b033-874de69cb341",
+      "target": "G_Main"
+    },
+    {
+      "id": "D_SD-02_T_Check_7fe1c94a-b9da-46bb-970b-f8e336280f25",
+      "type": "istar.DependencyLink",
+      "source": "T_Check",
+      "target": "7fe1c94a-b9da-46bb-970b-f8e336280f25"
+    },
+    {
+      "id": "D_SD-02_7fe1c94a-b9da-46bb-970b-f8e336280f25_a2caa69e-a348-4442-98ef-2a6f3f0973ae",
+      "type": "istar.DependencyLink",
+      "source": "7fe1c94a-b9da-46bb-970b-f8e336280f25",
+      "target": "a2caa69e-a348-4442-98ef-2a6f3f0973ae"
+    },
+    {
+      "id": "D_SD-06_T_Verify_961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
+      "type": "istar.DependencyLink",
+      "source": "T_Verify",
+      "target": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a"
+    },
+    {
+      "id": "D_SD-06_961d1a7a-186d-4ff4-8e20-e1c0418fe05a_b564cede-fa08-46df-8604-916fe1798f8d",
+      "type": "istar.DependencyLink",
+      "source": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
+      "target": "b564cede-fa08-46df-8604-916fe1798f8d"
+    },
+    {
+      "id": "D_SD-12_T_Apply_2f979215-9dfb-4df9-9e24-5fda7723624c",
+      "type": "istar.DependencyLink",
+      "source": "T_Apply",
+      "target": "2f979215-9dfb-4df9-9e24-5fda7723624c"
+    },
+    {
+      "id": "D_SD-12_2f979215-9dfb-4df9-9e24-5fda7723624c_a2caa69e-a348-4442-98ef-2a6f3f0973ae",
+      "type": "istar.DependencyLink",
+      "source": "2f979215-9dfb-4df9-9e24-5fda7723624c",
+      "target": "a2caa69e-a348-4442-98ef-2a6f3f0973ae"
+    },
+    {
+      "id": "D_SD-17_747a5c4f-5f52-49ca-b4c7-67bdee765bc4_d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
+      "type": "istar.DependencyLink",
+      "source": "747a5c4f-5f52-49ca-b4c7-67bdee765bc4",
+      "target": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e"
+    },
+    {
+      "id": "D_SD-17_d40d2158-8ba1-4c31-9d17-9d70aae9c29e_G_Availability",
+      "type": "istar.DependencyLink",
+      "source": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
+      "target": "G_Availability"
+    }
+  ],
+  "display": {
+    "G_Main": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Manage": {
+      "width": 210,
+      "height": 80
+    },
+    "G_Details": {
+      "width": 210,
+      "height": 80
+    },
+    "G_Cert": {
+      "width": 210,
+      "height": 80
+    },
+    "G_Availability": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Publish": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Check": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Verify": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Inventory": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Apply": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Zero": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Reopen": {
+      "width": 210,
+      "height": 80
+    },
+    "a2caa69e-a348-4442-98ef-2a6f3f0973ae": {
+      "collapsed": true
+    },
+    "b564cede-fa08-46df-8604-916fe1798f8d": {
+      "collapsed": true
+    },
+    "747a5c4f-5f52-49ca-b4c7-67bdee765bc4": {
+      "collapsed": true
+    },
+    "4f91b182-00c2-4520-b033-874de69cb341": {
+      "width": 180,
+      "height": 75
+    },
+    "7fe1c94a-b9da-46bb-970b-f8e336280f25": {
+      "width": 180,
+      "height": 75
+    },
+    "961d1a7a-186d-4ff4-8e20-e1c0418fe05a": {
+      "width": 180,
+      "height": 75
+    },
+    "2f979215-9dfb-4df9-9e24-5fda7723624c": {
+      "width": 180,
+      "height": 75
+    },
+    "d40d2158-8ba1-4c31-9d17-9d70aae9c29e": {
+      "width": 180,
+      "height": 75
+    }
+  },
+  "tool": "pistar.2.1.0",
+  "istar": "2.0",
+  "saveDate": "Wed, 11 Nov 2026 00:00:00 GMT",
+  "diagram": {
+    "width": 2900,
+    "height": 1650,
+    "name": "Use Case 1 Marketplace SR goals and tasks",
+    "customProperties": {
+      "Scope": "Ahmed Card 17. Taha adds softgoals and contributions under Card 19.",
+      "Notation": "Classic lecture subset. AndRefinementLink renders a short bar at a parent TASK and represents task decomposition. OrRefinementLink renders task-to-goal means-end. No OR branching or alternative business policies are asserted."
+    }
+  }
+}
