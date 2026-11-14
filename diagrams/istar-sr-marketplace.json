@@ -182,7 +182,7 @@
   "dependencies": [
     {
       "id": "4f91b182-00c2-4520-b033-874de69cb341",
-      "text": "Product Successfully Listed",
+      "text": "SD-01\nProduct Successfully Listed",
       "type": "istar.Goal",
       "x": 300,
       "y": 180,
@@ -194,7 +194,7 @@
     },
     {
       "id": "7fe1c94a-b9da-46bb-970b-f8e336280f25",
-      "text": "Complete Product Submission Data",
+      "text": "SD-02\nComplete Product Submission Data",
       "type": "istar.Resource",
       "x": 300,
       "y": 680,
@@ -206,7 +206,7 @@
     },
     {
       "id": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
-      "text": "Organic Claim Checked",
+      "text": "SD-06\nOrganic Claim Checked",
       "type": "istar.Task",
       "x": 300,
       "y": 1180,
@@ -218,7 +218,7 @@
     },
     {
       "id": "2f979215-9dfb-4df9-9e24-5fda7723624c",
-      "text": "Updated Quantity And Seasonal Dates",
+      "text": "SD-12\nUpdated Quantity And Seasonal Dates",
       "type": "istar.Resource",
       "x": 300,
       "y": 1000,
@@ -230,7 +230,7 @@
     },
     {
       "id": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
-      "text": "Current Product Availability",
+      "text": "SD-17\nCurrent Product Availability",
       "type": "istar.Goal",
       "x": 2440,
       "y": 820,

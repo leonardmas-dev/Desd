@@ -4,8 +4,8 @@
       "id": "4e2b4437-d604-432a-8804-2837b9f612d7",
       "text": "Marketplace Admin",
       "type": "istar.Role",
-      "x": 1133,
-      "y": 436,
+      "x": 1529.55,
+      "y": 588.6,
       "customProperties": {
         "Description": ""
       },
@@ -15,8 +15,8 @@
       "id": "b564cede-fa08-46df-8604-916fe1798f8d",
       "text": "External Organic Certification Verification Service",
       "type": "istar.Actor",
-      "x": 681,
-      "y": 579,
+      "x": 919.35,
+      "y": 781.65,
       "customProperties": {
         "Description": ""
       },
@@ -26,8 +26,8 @@
       "id": "a2caa69e-a348-4442-98ef-2a6f3f0973ae",
       "text": "Producer",
       "type": "istar.Actor",
-      "x": 128,
-      "y": 78,
+      "x": 172.8,
+      "y": 105.3,
       "customProperties": {
         "Description": ""
       },
@@ -37,8 +37,8 @@
       "id": "15a70be1-b5ca-477b-9f7f-749f639c4068",
       "text": "BRFN Platform",
       "type": "istar.Agent",
-      "x": 686,
-      "y": 357,
+      "x": 926.1,
+      "y": 481.95,
       "customProperties": {
         "Description": ""
       },
@@ -48,8 +48,8 @@
       "id": "747a5c4f-5f52-49ca-b4c7-67bdee765bc4",
       "text": "Customer",
       "type": "istar.Actor",
-      "x": 1142,
-      "y": 76,
+      "x": 1541.7,
+      "y": 102.6,
       "customProperties": {
         "Description": ""
       },
@@ -60,10 +60,10 @@
   "dependencies": [
     {
       "id": "4a0e51e2-46aa-4e27-a7cf-03bc37fdea21",
-      "text": "Certification Verification Result",
+      "text": "SD-07\nCertification Verification Result",
       "type": "istar.Resource",
-      "x": 649,
-      "y": 458,
+      "x": 876.15,
+      "y": 618.3,
       "customProperties": {
         "Description": "SD-07"
       },
@@ -72,10 +72,10 @@
     },
     {
       "id": "5381c781-2368-4875-88db-d2a6a51ee26c",
-      "text": "Unresolved Verification Case Reviewed",
+      "text": "SD-09\nUnresolved Verification Case Reviewed",
       "type": "istar.Task",
-      "x": 951,
-      "y": 422,
+      "x": 1283.85,
+      "y": 569.7,
       "customProperties": {
         "Description": "SD-09"
       },
@@ -84,10 +84,10 @@
     },
     {
       "id": "d7499da7-3a94-4186-bd77-0dc6b36fa3cc",
-      "text": "Accurate Product Information",
+      "text": "SD-16\nAccurate Product Information",
       "type": "istar.Resource",
-      "x": 855,
-      "y": 139,
+      "x": 1154.25,
+      "y": 187.65,
       "customProperties": {
         "Description": "SD-16"
       },
@@ -96,10 +96,10 @@
     },
     {
       "id": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
-      "text": "Current Product Availability",
+      "text": "SD-17\nCurrent Product Availability",
       "type": "istar.Goal",
-      "x": 929,
-      "y": 274,
+      "x": 1254.15,
+      "y": 369.9,
       "customProperties": {
         "Description": "SD-17"
       },
@@ -108,10 +108,10 @@
     },
     {
       "id": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
-      "text": "Organic Claim Checked",
+      "text": "SD-06\nOrganic Claim Checked",
       "type": "istar.Task",
-      "x": 739,
-      "y": 495,
+      "x": 997.65,
+      "y": 668.25,
       "customProperties": {
         "Description": "SD-06"
       },
@@ -120,10 +120,10 @@
     },
     {
       "id": "4f91b182-00c2-4520-b033-874de69cb341",
-      "text": "Product Successfully Listed",
+      "text": "SD-01\nProduct Successfully Listed",
       "type": "istar.Goal",
-      "x": 677,
-      "y": 86,
+      "x": 913.95,
+      "y": 116.1,
       "customProperties": {
         "Description": "SD-01"
       },
@@ -132,10 +132,10 @@
     },
     {
       "id": "7fe1c94a-b9da-46bb-970b-f8e336280f25",
-      "text": "Complete Product Submission Data",
+      "text": "SD-02\nComplete Product Submission Data",
       "type": "istar.Resource",
-      "x": 253,
-      "y": 400,
+      "x": 341.55,
+      "y": 540.0,
       "customProperties": {
         "Description": "SD-02"
       },
@@ -144,10 +144,10 @@
     },
     {
       "id": "b55a736b-556a-4e55-b7bf-401b27b94a58",
-      "text": "Clear Validation Feedback",
+      "text": "SD-03\nClear Validation Feedback",
       "type": "istar.Resource",
-      "x": 540,
-      "y": 119,
+      "x": 729.0,
+      "y": 160.65,
       "customProperties": {
         "Description": "SD-03"
       },
@@ -156,10 +156,10 @@
     },
     {
       "id": "a2a01684-3975-4e03-8230-691e045dc87b",
-      "text": "Easy To Use Product Management",
+      "text": "SD-19\nEasy To Use Product Management",
       "type": "istar.Quality",
-      "x": 433,
-      "y": 183,
+      "x": 584.55,
+      "y": 247.05,
       "customProperties": {
         "Description": "SD-19"
       },
@@ -168,10 +168,10 @@
     },
     {
       "id": "38181e05-f5bd-4923-aedf-ea05f1c0d8c0",
-      "text": "Corrected Product Information",
+      "text": "SD-04\nCorrected Product Information",
       "type": "istar.Resource",
-      "x": 425,
-      "y": 242,
+      "x": 573.75,
+      "y": 326.7,
       "customProperties": {
         "Description": "SD-04"
       },
@@ -180,10 +180,10 @@
     },
     {
       "id": "d2848e5f-03d6-43ae-9bb6-31717a5872ae",
-      "text": "Accurate And Compliant Product Catalogue",
+      "text": "SD-05\nAccurate And Compliant Product Catalogue",
       "type": "istar.Goal",
-      "x": 925,
-      "y": 493,
+      "x": 1248.75,
+      "y": 665.55,
       "customProperties": {
         "Description": "SD-05"
       },
@@ -192,10 +192,10 @@
     },
     {
       "id": "1ec21507-08fa-40b6-88f1-edc6223080ff",
-      "text": "Certification Details Submitted For Checking",
+      "text": "SD-08\nCertification Details Submitted For Checking",
       "type": "istar.Resource",
-      "x": 500,
-      "y": 463,
+      "x": 675.0,
+      "y": 625.05,
       "customProperties": {
         "Description": "SD-08"
       },
@@ -204,10 +204,10 @@
     },
     {
       "id": "d7397dc5-9093-480c-8b41-d059a303998b",
-      "text": "Trustworthy Food Safety And Provenance Information",
+      "text": "SD-18\nTrustworthy Food Safety And Provenance Information",
       "type": "istar.Quality",
-      "x": 900,
-      "y": 202,
+      "x": 1215.0,
+      "y": 272.7,
       "customProperties": {
         "Description": "SD-18"
       },
@@ -216,10 +216,10 @@
     },
     {
       "id": "d06547e5-113c-49ab-8bec-082a8cd8ffa4",
-      "text": "Only Show Organic Status When Verified",
+      "text": "SD-10\nOnly Show Organic Status When Verified",
       "type": "istar.Goal",
-      "x": 748,
-      "y": 36,
+      "x": 1009.8,
+      "y": 48.6,
       "customProperties": {
         "Description": "SD-10"
       },
@@ -228,10 +228,10 @@
     },
     {
       "id": "00bcdda4-4c60-4e77-8d1b-8dd541b47e24",
-      "text": "Product Stock And Seasonal Availability Maintained",
+      "text": "SD-11\nProduct Stock And Seasonal Availability Maintained",
       "type": "istar.Goal",
-      "x": 522,
-      "y": 168,
+      "x": 704.7,
+      "y": 226.8,
       "customProperties": {
         "Description": "SD-11"
       },
@@ -240,10 +240,10 @@
     },
     {
       "id": "2f979215-9dfb-4df9-9e24-5fda7723624c",
-      "text": "Updated Quantity And Seasonal Dates",
+      "text": "SD-12\nUpdated Quantity And Seasonal Dates",
       "type": "istar.Resource",
-      "x": 383,
-      "y": 426,
+      "x": 517.05,
+      "y": 575.1,
       "customProperties": {
         "Description": "SD-12"
       },
@@ -252,10 +252,10 @@
     },
     {
       "id": "b11122ab-debe-4138-a6c5-7e6b13df6009",
-      "text": "Out Of Stock Products Made Unavailable",
+      "text": "SD-13\nOut Of Stock Products Made Unavailable",
       "type": "istar.Goal",
-      "x": 379,
-      "y": 293,
+      "x": 511.65,
+      "y": 395.55,
       "customProperties": {
         "Description": "SD-13"
       },
@@ -264,10 +264,10 @@
     },
     {
       "id": "23d29e2e-e354-4dc7-9d60-99eaa1d7686a",
-      "text": "Eligible Replenished Products Made Available Again",
+      "text": "SD-14\nEligible Replenished Products Made Available Again",
       "type": "istar.Goal",
-      "x": 289,
-      "y": 339,
+      "x": 390.15,
+      "y": 457.65,
       "customProperties": {
         "Description": "SD-14"
       },
@@ -276,10 +276,10 @@
     },
     {
       "id": "060bcc30-59e4-4216-8629-e0d1eb119ba8",
-      "text": "Reliable Inventory And Seasonal Status",
+      "text": "SD-15\nReliable Inventory And Seasonal Status",
       "type": "istar.Goal",
-      "x": 969,
-      "y": 365,
+      "x": 1308.15,
+      "y": 492.75,
       "customProperties": {
         "Description": "SD-15"
       },
@@ -519,362 +519,362 @@
   ],
   "display": {
     "4a0e51e2-46aa-4e27-a7cf-03bc37fdea21": {
-      "width": 85.25,
-      "height": 52.125
+      "width": 115.088,
+      "height": 70.369
     },
     "5381c781-2368-4875-88db-d2a6a51ee26c": {
-      "width": 107.75,
-      "height": 62.125
+      "width": 145.463,
+      "height": 83.869
     },
     "d7499da7-3a94-4186-bd77-0dc6b36fa3cc": {
-      "width": 100.25,
-      "height": 56.625
+      "width": 135.338,
+      "height": 76.444
     },
     "d40d2158-8ba1-4c31-9d17-9d70aae9c29e": {
-      "width": 98.25,
-      "height": 52.125
+      "width": 132.638,
+      "height": 70.369
     },
     "961d1a7a-186d-4ff4-8e20-e1c0418fe05a": {
-      "width": 103.25,
-      "height": 50.125
+      "width": 139.388,
+      "height": 67.669
     },
     "4f91b182-00c2-4520-b033-874de69cb341": {
-      "width": 95.25,
-      "height": 51.125
+      "width": 128.588,
+      "height": 69.019
     },
     "7fe1c94a-b9da-46bb-970b-f8e336280f25": {
-      "width": 115,
-      "height": 62
+      "width": 155.25,
+      "height": 83.7
     },
     "b55a736b-556a-4e55-b7bf-401b27b94a58": {
-      "width": 125,
-      "height": 43
+      "width": 168.75,
+      "height": 58.05
     },
     "a2a01684-3975-4e03-8230-691e045dc87b": {
-      "width": 88.276611328125,
-      "height": 56.13081359863281
+      "width": 119.173,
+      "height": 75.777
     },
     "38181e05-f5bd-4923-aedf-ea05f1c0d8c0": {
-      "width": 97.25,
-      "height": 47.125
+      "width": 131.288,
+      "height": 63.619
     },
     "d2848e5f-03d6-43ae-9bb6-31717a5872ae": {
-      "width": 110.25,
-      "height": 57.125
+      "width": 148.838,
+      "height": 77.119
     },
     "1ec21507-08fa-40b6-88f1-edc6223080ff": {
-      "width": 130,
-      "height": 75
+      "width": 175.5,
+      "height": 101.25
     },
     "d7397dc5-9093-480c-8b41-d059a303998b": {
-      "width": 130,
-      "height": 70
+      "width": 175.5,
+      "height": 94.5
     },
     "d06547e5-113c-49ab-8bec-082a8cd8ffa4": {
-      "width": 97.25,
-      "height": 43.125
+      "width": 131.288,
+      "height": 58.219
     },
     "00bcdda4-4c60-4e77-8d1b-8dd541b47e24": {
-      "width": 106.25,
-      "height": 54.125
+      "width": 143.438,
+      "height": 73.069
     },
     "2f979215-9dfb-4df9-9e24-5fda7723624c": {
-      "width": 110,
-      "height": 70
+      "width": 148.5,
+      "height": 94.5
     },
     "b11122ab-debe-4138-a6c5-7e6b13df6009": {
-      "width": 90.25,
-      "height": 56.125
+      "width": 121.838,
+      "height": 75.769
     },
     "23d29e2e-e354-4dc7-9d60-99eaa1d7686a": {
-      "width": 103.25,
-      "height": 56.125
+      "width": 139.388,
+      "height": 75.769
     },
     "060bcc30-59e4-4216-8629-e0d1eb119ba8": {
-      "width": 91.25,
-      "height": 49.524993896484375
+      "width": 123.188,
+      "height": 66.859
     },
     "bebd54a9-2b6b-4204-9e93-0caee58a8d90": {
       "vertices": [
         {
-          "x": 1112,
-          "y": 434
+          "x": 1501.2,
+          "y": 585.9
         }
       ]
     },
     "f05a92e8-11a6-4553-9329-62a8687c3485": {
       "vertices": [
         {
-          "x": 190,
-          "y": 156
+          "x": 256.5,
+          "y": 210.6
         }
       ]
     },
     "3ed26cba-cdcc-4d69-9741-f93364330dc6": {
       "vertices": [
         {
-          "x": 204,
-          "y": 144
+          "x": 275.4,
+          "y": 194.4
         }
       ]
     },
     "b1d40d79-90a1-4b35-a933-1d7fea584c3f": {
       "vertices": [
         {
-          "x": 209,
-          "y": 434
+          "x": 282.15,
+          "y": 585.9
         },
         {
-          "x": 197,
-          "y": 287
+          "x": 265.95,
+          "y": 387.45
         },
         {
-          "x": 164,
-          "y": 179
+          "x": 221.4,
+          "y": 241.65
         }
       ]
     },
     "f9939767-ab23-4bc7-b24a-6551a7add5b3": {
       "vertices": [
         {
-          "x": 668,
-          "y": 313
+          "x": 901.8,
+          "y": 422.55
         }
       ]
     },
     "14dd096f-4563-42c8-b13e-b3f5a9d2bbce": {
       "vertices": [
         {
-          "x": 604,
-          "y": 63
+          "x": 815.4,
+          "y": 85.05
         }
       ]
     },
     "d714b0d7-c6a5-48d7-87c1-73452e681557": {
       "vertices": [
         {
-          "x": 768,
-          "y": 341
+          "x": 1036.8,
+          "y": 460.35
         }
       ]
     },
     "7f176968-bc1e-435b-b1f0-126853b5e3f6": {
       "vertices": [
         {
-          "x": 1112,
-          "y": 130
+          "x": 1501.2,
+          "y": 175.5
         }
       ]
     },
     "41a1cbf9-2ad9-4433-a8f4-c9d16d0f4ba9": {
       "vertices": [
         {
-          "x": 648,
-          "y": 425
+          "x": 874.8,
+          "y": 573.75
         },
         {
-          "x": 675,
-          "y": 403
+          "x": 911.25,
+          "y": 544.05
         },
         {
-          "x": 662,
-          "y": 413
+          "x": 893.7,
+          "y": 557.55
         }
       ]
     },
     "28e8f4d6-e422-4875-ad6c-b8847caf09a4": {
       "vertices": [
         {
-          "x": 639,
-          "y": 583
+          "x": 862.65,
+          "y": 787.05
         }
       ]
     },
     "9cdec77f-541b-4ab0-8d40-19dff35e1439": {
       "vertices": [
         {
-          "x": 772,
-          "y": 413
+          "x": 1042.2,
+          "y": 557.55
         }
       ]
     },
     "42b4965b-a37f-4b2e-baec-d71cfc0c7128": {
       "vertices": [
         {
-          "x": 1136,
-          "y": 498
+          "x": 1533.6,
+          "y": 672.3
         },
         {
-          "x": 1072,
-          "y": 517
+          "x": 1447.2,
+          "y": 697.95
         }
       ]
     },
     "3703446a-ec54-4863-a5c5-af69c375b485": {
       "vertices": [
         {
-          "x": 352,
-          "y": 208
+          "x": 475.2,
+          "y": 280.8
         },
         {
-          "x": 211,
-          "y": 133
+          "x": 284.85,
+          "y": 179.55
         }
       ]
     },
     "52d6e2fb-53f3-4c32-a3e0-7cbb8d59bddd": {
       "vertices": [
         {
-          "x": 647,
-          "y": 348
+          "x": 873.45,
+          "y": 469.8
         },
         {
-          "x": 590,
-          "y": 312
+          "x": 796.5,
+          "y": 421.2
         }
       ]
     },
     "6afcc564-e70a-4bfc-ae0c-a0b9e3aa970b": {
       "vertices": [
         {
-          "x": 611,
-          "y": 289
+          "x": 824.85,
+          "y": 390.15
         },
         {
-          "x": 665,
-          "y": 338
+          "x": 897.75,
+          "y": 456.3
         }
       ]
     },
     "6c85746e-376b-4e5a-98d2-2527d5c5cf55": {
       "vertices": [
         {
-          "x": 395,
-          "y": 180
+          "x": 533.25,
+          "y": 243.0
         }
       ]
     },
     "541faef1-e78c-458d-bfe1-43907b011272": {
       "vertices": [
         {
-          "x": 669,
-          "y": 203
+          "x": 903.15,
+          "y": 274.05
         },
         {
-          "x": 686,
-          "y": 245
+          "x": 926.1,
+          "y": 330.75
         },
         {
-          "x": 694,
-          "y": 320
+          "x": 936.9,
+          "y": 432.0
         }
       ]
     },
     "35fcf4f5-f5d6-40b4-898e-58a772ba85a1": {
       "vertices": [
         {
-          "x": 472,
-          "y": 139
+          "x": 637.2,
+          "y": 187.65
         }
       ]
     },
     "a149e499-53ba-443c-9d05-8beb14f1a768": {
       "vertices": [
         {
-          "x": 260,
-          "y": 350
+          "x": 351.0,
+          "y": 472.5
         },
         {
-          "x": 208,
-          "y": 236
+          "x": 280.8,
+          "y": 318.6
         },
         {
-          "x": 168,
-          "y": 146
+          "x": 226.8,
+          "y": 197.1
         }
       ]
     },
     "37153c6b-d609-446d-8c09-6f0a920beb36": {
       "vertices": [
         {
-          "x": 721,
-          "y": 240
+          "x": 973.35,
+          "y": 324.0
         }
       ]
     },
     "3c881f9b-c7fe-4ceb-9704-5df6660fb415": {
       "vertices": [
         {
-          "x": 543,
-          "y": 102
+          "x": 733.05,
+          "y": 137.7
         }
       ]
     },
     "8c947d8c-7ad6-4f46-bc4c-51385924afb9": {
       "vertices": [
         {
-          "x": 699,
-          "y": 554
+          "x": 943.65,
+          "y": 747.9
         }
       ]
     },
     "edc8b7b9-2332-42ea-b881-5136008f0d42": {
       "vertices": [
         {
-          "x": 760,
-          "y": 576
+          "x": 1026.0,
+          "y": 777.6
         }
       ]
     },
     "43ad7d61-f1a2-4963-b714-bd2417a02e15": {
       "vertices": [
         {
-          "x": 724,
-          "y": 418
+          "x": 977.4,
+          "y": 564.3
         },
         {
-          "x": 754,
-          "y": 444
+          "x": 1017.9,
+          "y": 599.4
         },
         {
-          "x": 774,
-          "y": 468
+          "x": 1044.9,
+          "y": 631.8
         }
       ]
     },
     "230209c8-9dcc-486d-9ae4-8694060cdb83": {
       "vertices": [
         {
-          "x": 816,
-          "y": 350
+          "x": 1101.6,
+          "y": 472.5
         }
       ]
     },
     "9e51bb0f-1280-405b-a627-10f285158d41": {
       "vertices": [
         {
-          "x": 1128,
-          "y": 145
+          "x": 1522.8,
+          "y": 195.75
         },
         {
-          "x": 1048,
-          "y": 255
+          "x": 1414.8,
+          "y": 344.25
         },
         {
-          "x": 1011,
-          "y": 274
+          "x": 1364.85,
+          "y": 369.9
         }
       ]
     },
     "61d80ef7-9277-4546-bbd5-6a1b31b0c801": {
       "vertices": [
         {
-          "x": 754,
-          "y": 326
+          "x": 1017.9,
+          "y": 440.1
         },
         {
-          "x": 743,
-          "y": 337
+          "x": 1003.05,
+          "y": 454.95
         }
       ]
     },
@@ -898,8 +898,8 @@
   "istar": "2.0",
   "saveDate": "Tue, 10 Nov 2026 23:56:58 GMT",
   "diagram": {
-    "width": 1600,
-    "height": 1043,
+    "width": 2160,
+    "height": 1408,
     "name": "Strategic Dependency Model",
     "customProperties": {
       "Description": ""
