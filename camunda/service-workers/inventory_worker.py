@@ -144,8 +144,19 @@ class Client:
                         result = inventory.execute(job_type, job.get('variables', {}))
                         self.post(f'/jobs/{key}/completion', {'variables': result})
                     except InventoryError as exc:
-                        # Job failure, not BPMN error: requires coordinated boundary error definitions.
-                        self.post(f'/jobs/{key}/failure', {'retries': 0, 'errorMessage': str(exc)})
+                        # Match the BPMN boundary events on the two inventory operations.
+                        error_codes = {
+                            'deduct-inventory': 'INVENTORY_DEDUCTION_FAILED',
+                            'update-stock': 'INVENTORY_UPDATE_FAILED',
+                        }
+                        if job_type in error_codes:
+                            self.post(f'/jobs/{key}/error', {
+                                'errorCode': error_codes[job_type],
+                                'errorMessage': str(exc),
+                                'variables': {'inventoryErrorMessage': str(exc), 'failedJobType': job_type},
+                            })
+                        else:
+                            self.post(f'/jobs/{key}/failure', {'retries': 0, 'errorMessage': str(exc)})
                     except Exception as exc:
                         print('Worker error:', exc, file=sys.stderr)
                         self.post(f'/jobs/{key}/failure', {'retries': max(0, int(job.get('retries', 1)) - 1),

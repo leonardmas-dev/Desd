@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InventoryLifecycle" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="1921008" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:collaboration id="Collaboration_InventoryManagement" name="Inventory_Management_Operational">
+    <bpmn:participant id="Pool_BRFNPlatform" name="BRFN Platform" processRef="Process_InventoryManagement" />
+    <bpmn:participant id="Pool_Customer" name="Customer" />
+    <bpmn:participant id="Pool_Producer" name="Producer" processRef="Process_ProducerStockUpdate" />
+    <bpmn:messageFlow id="M_ZeroStockNotice" name="Zero Stock Notice" sourceRef="Task_NotifyProducerZeroStock" targetRef="Start_StockUpdateNeeded" />
+    <bpmn:messageFlow id="M_CustomerOrder" name="Customer Order" sourceRef="Pool_Customer" targetRef="Start_CustomerOrderReceived" />
+    <bpmn:messageFlow id="M_StockUpdateSubmitted" name="Updated Quantity and Seasonal Dates" sourceRef="Task_SendStockUpdate" targetRef="Start_RestockRequested" />
+    <bpmn:messageFlow id="M_RestockCorrectionRequested" name="Check Product Details are Correct" sourceRef="Task_RequestCorrectedDetails" targetRef="Catch_StockCorrectionRequested" />
+    <bpmn:messageFlow id="M_StockUpdateConfirmed" name="Stock Updated" sourceRef="Task_ConfirmStockUpdate" targetRef="Catch_StockUpdateConfirmed" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_InventoryManagement" name="Dynamic Inventory Tracking &#38; Seasonal Lifecycle Management" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_InventoryRoles">
+      <bpmn:lane id="Lane_InventoryManagement" name="Inventory Management">
+        <bpmn:flowNodeRef>Gateway_StockDepleted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_ProductStillAvailable</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UnpublishOutOfStockProduct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotifyProducerZeroStock</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_ProductOutOfStock</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Start_CustomerOrderReceived</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_SeasonalProductArchived</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RepublishProduct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_SeasonalCheck</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateStockRecord</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_RestockDetailsValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DeductInventory</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CheckRestockDetails</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RequestCorrectedDetails</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_RestockCorrectionRequested</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Start_RestockRequested</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_ProductAvailable</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConfirmStockUpdate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Boundary_StockDeductionFailed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Boundary_StockRecordUpdateFailed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Start_ProductListed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InitialiseInventoryRecord</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_InventoryRecordInitialised</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_MarketplaceAdmin" name="Marketplace Admin">
+        <bpmn:flowNodeRef>Task_InvestigateInventoryError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_InventoryErrorHandled</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeInventoryErrors</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:exclusiveGateway id="Gateway_StockDepleted" name="Stock &#60;= 0?" default="F_StockRemaining">
+      <bpmn:incoming>F_CheckStockDepletion</bpmn:incoming>
+      <bpmn:outgoing>F_StockRemaining</bpmn:outgoing>
+      <bpmn:outgoing>F_StockDepleted</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_ProductStillAvailable" name="Product Still Available">
+      <bpmn:incoming>F_StockRemaining</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_UnpublishOutOfStockProduct" name="Make products unavailable when stock reaches zero">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="unpublish-stock" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_StockDepleted</bpmn:incoming>
+      <bpmn:outgoing>F_UnpublishedToNotification</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Task_NotifyProducerZeroStock" name="Notify Producer of Zero Stock">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="notify-producer" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_UnpublishedToNotification</bpmn:incoming>
+      <bpmn:outgoing>F_ZeroStockNotificationComplete</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_ProductOutOfStock" name="Product Out Of Stock and Unavailable">
+      <bpmn:incoming>F_ZeroStockNotificationComplete</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:startEvent id="Start_CustomerOrderReceived" name="Customer Order Received">
+      <bpmn:outgoing>F_OrderToDeduction</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDef_CustomerOrderReceived" messageRef="Msg_CustomerOrder" />
+    </bpmn:startEvent>
+    <bpmn:endEvent id="End_SeasonalProductArchived" name="Archived Seasonal Product">
+      <bpmn:incoming>F_OutsideSeason</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_RepublishProduct" name="Restore Replenished Stock">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="republish-product" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_WithinSeason</bpmn:incoming>
+      <bpmn:outgoing>F_RepublishedToConfirmation</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_SeasonalCheck" name="Product in Season?" default="F_OutsideSeason">
+      <bpmn:incoming>F_CheckSeasonalAvailability</bpmn:incoming>
+      <bpmn:outgoing>F_WithinSeason</bpmn:outgoing>
+      <bpmn:outgoing>F_OutsideSeason</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_UpdateStockRecord" name="Update Stock Record">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="update-stock" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_ValidRestock</bpmn:incoming>
+      <bpmn:outgoing>F_CheckSeasonalAvailability</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_RestockDetailsValid" name="Restock Quantity and Dates Valid?" default="F_InvalidRestock">
+      <bpmn:incoming>F_CheckRestockValidity</bpmn:incoming>
+      <bpmn:outgoing>F_ValidRestock</bpmn:outgoing>
+      <bpmn:outgoing>F_InvalidRestock</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_DeductInventory" name="Deduct Inventory">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="deduct-inventory" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_OrderToDeduction</bpmn:incoming>
+      <bpmn:outgoing>F_CheckStockDepletion</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_InvestigateInventoryError" name="Investigate Inventory Error">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="InvestigateInventoryError" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_InvestigateInventoryError</bpmn:incoming>
+      <bpmn:outgoing>F_InventoryErrorHandled</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_InventoryErrorHandled" name="Error Resolved or Escalated">
+      <bpmn:incoming>F_InventoryErrorHandled</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_CheckRestockDetails" name="Check Restock Details">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="check-restock-details" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_RestockToValidation</bpmn:incoming>
+      <bpmn:outgoing>F_CheckRestockValidity</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Task_RequestCorrectedDetails" name="Request Corrected Details">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="request-check-details" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_InvalidRestock</bpmn:incoming>
+      <bpmn:outgoing>F_RestockCorrectionSent</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_RestockCorrectionRequested" name="Correction Requested">
+      <bpmn:incoming>F_RestockCorrectionSent</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:startEvent id="Start_RestockRequested" name="Restock Started">
+      <bpmn:outgoing>F_RestockToValidation</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDef_RestockRequested" messageRef="Msg_RestockStarted" />
+    </bpmn:startEvent>
+    <bpmn:endEvent id="End_ProductAvailable" name="Product Available">
+      <bpmn:incoming>F_StockConfirmationComplete</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sendTask id="Task_ConfirmStockUpdate" name="Confirm Stock Updated">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="confirm-stock-update" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_RepublishedToConfirmation</bpmn:incoming>
+      <bpmn:outgoing>F_StockConfirmationComplete</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:boundaryEvent id="Boundary_StockDeductionFailed" name="Stock Update Failed" attachedToRef="Task_DeductInventory">
+      <bpmn:outgoing>F_DeductionError</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorDef_StockDeductionFailed" errorRef="Error_StockDeductionFailed" />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Boundary_StockRecordUpdateFailed" name="Record Update Failed" attachedToRef="Task_UpdateStockRecord">
+      <bpmn:outgoing>F_RecordUpdateError</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorDef_StockRecordUpdateFailed" errorRef="Error_StockRecordUpdateFailed" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="F_CheckStockDepletion" sourceRef="Task_DeductInventory" targetRef="Gateway_StockDepleted" />
+    <bpmn:sequenceFlow id="F_StockRemaining" name="No" sourceRef="Gateway_StockDepleted" targetRef="End_ProductStillAvailable" />
+    <bpmn:sequenceFlow id="F_StockDepleted" name="Yes" sourceRef="Gateway_StockDepleted" targetRef="Task_UnpublishOutOfStockProduct">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=stockQuantity &lt;= 0</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_UnpublishedToNotification" sourceRef="Task_UnpublishOutOfStockProduct" targetRef="Task_NotifyProducerZeroStock" />
+    <bpmn:sequenceFlow id="F_ZeroStockNotificationComplete" sourceRef="Task_NotifyProducerZeroStock" targetRef="End_ProductOutOfStock" />
+    <bpmn:sequenceFlow id="F_OrderToDeduction" sourceRef="Start_CustomerOrderReceived" targetRef="Task_DeductInventory" />
+    <bpmn:sequenceFlow id="F_OutsideSeason" name="No" sourceRef="Gateway_SeasonalCheck" targetRef="End_SeasonalProductArchived" />
+    <bpmn:sequenceFlow id="F_WithinSeason" name="Yes" sourceRef="Gateway_SeasonalCheck" targetRef="Task_RepublishProduct">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=today() &gt;= date(seasonalStartDate) and today() &lt;= date(seasonalEndDate)</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_RepublishedToConfirmation" sourceRef="Task_RepublishProduct" targetRef="Task_ConfirmStockUpdate" />
+    <bpmn:sequenceFlow id="F_CheckSeasonalAvailability" sourceRef="Task_UpdateStockRecord" targetRef="Gateway_SeasonalCheck" />
+    <bpmn:sequenceFlow id="F_ValidRestock" name="Yes" sourceRef="Gateway_RestockDetailsValid" targetRef="Task_UpdateStockRecord">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=validationPassed = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_CheckRestockValidity" sourceRef="Task_CheckRestockDetails" targetRef="Gateway_RestockDetailsValid" />
+    <bpmn:sequenceFlow id="F_InvalidRestock" name="No" sourceRef="Gateway_RestockDetailsValid" targetRef="Task_RequestCorrectedDetails" />
+    <bpmn:sequenceFlow id="F_InvestigateInventoryError" sourceRef="Gateway_MergeInventoryErrors" targetRef="Task_InvestigateInventoryError" />
+    <bpmn:sequenceFlow id="F_InventoryErrorHandled" sourceRef="Task_InvestigateInventoryError" targetRef="End_InventoryErrorHandled" />
+    <bpmn:sequenceFlow id="F_DeductionError" sourceRef="Boundary_StockDeductionFailed" targetRef="Gateway_MergeInventoryErrors" />
+    <bpmn:sequenceFlow id="F_RecordUpdateError" sourceRef="Boundary_StockRecordUpdateFailed" targetRef="Gateway_MergeInventoryErrors" />
+    <bpmn:sequenceFlow id="F_RestockToValidation" sourceRef="Start_RestockRequested" targetRef="Task_CheckRestockDetails" />
+    <bpmn:sequenceFlow id="F_RestockCorrectionSent" sourceRef="Task_RequestCorrectedDetails" targetRef="End_RestockCorrectionRequested" />
+    <bpmn:sequenceFlow id="F_StockConfirmationComplete" sourceRef="Task_ConfirmStockUpdate" targetRef="End_ProductAvailable" />
+    <bpmn:exclusiveGateway id="Gateway_MergeInventoryErrors" name="Merge Inventory Errors">
+      <bpmn:incoming>F_DeductionError</bpmn:incoming>
+      <bpmn:incoming>F_RecordUpdateError</bpmn:incoming>
+      <bpmn:outgoing>F_InvestigateInventoryError</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:startEvent id="Start_ProductListed" name="Product Listed">
+      <bpmn:outgoing>F_InitialiseListedProduct</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDef_ProductListed" messageRef="Msg_ProductListed" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="F_InitialiseListedProduct" sourceRef="Start_ProductListed" targetRef="Task_InitialiseInventoryRecord" />
+    <bpmn:serviceTask id="Task_InitialiseInventoryRecord" name="Initialise Inventory Record">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=availableStart" target="seasonalStartDate" />
+          <zeebe:input source="=availableEnd" target="seasonalEndDate" />
+        </zeebe:ioMapping>
+        <zeebe:taskDefinition type="brfn.inventory.initialise" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_InitialiseListedProduct</bpmn:incoming>
+      <bpmn:outgoing>F_InventoryInitialised</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_InventoryRecordInitialised" name="Inventory Record Initialised">
+      <bpmn:incoming>F_InventoryInitialised</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F_InventoryInitialised" sourceRef="Task_InitialiseInventoryRecord" targetRef="End_InventoryRecordInitialised" />
+  </bpmn:process>
+  <bpmn:message id="Msg_CustomerOrder" name="CustomerOrder" />
+  <bpmn:process id="Process_ProducerStockUpdate" isExecutable="false">
+    <bpmn:sendTask id="Task_SendStockUpdate" name="Send Stock Update">
+      <bpmn:incoming>P_SubmitStockUpdate</bpmn:incoming>
+      <bpmn:outgoing>P_WaitForStockResponse</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:userTask id="Task_UpdateQuantityAndAvailability" name="Update Quantity and Availability">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="ProducerRestockForm" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>P_EditStockDetails</bpmn:incoming>
+      <bpmn:outgoing>P_SubmitStockUpdate</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="Start_StockUpdateNeeded" name="Stock Update Needed">
+      <bpmn:outgoing>P_StockUpdateStarted</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDef_StockUpdateNeeded" messageRef="Msg_ZeroStockNotice" />
+    </bpmn:startEvent>
+    <bpmn:eventBasedGateway id="Gateway_WaitStockUpdateResponse" name="Wait For Response">
+      <bpmn:incoming>P_WaitForStockResponse</bpmn:incoming>
+      <bpmn:outgoing>P_CorrectionRequested</bpmn:outgoing>
+      <bpmn:outgoing>P_UpdateConfirmed</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Catch_StockCorrectionRequested" name="Correction Requested">
+      <bpmn:incoming>P_CorrectionRequested</bpmn:incoming>
+      <bpmn:outgoing>P_RetryStockUpdate</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDef_StockCorrectionRequested" messageRef="Msg_RestockCorrectionRequested" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="End_ProducerStockUpdated" name="Stock Updated">
+      <bpmn:incoming>P_StockUpdateCompleted</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:intermediateCatchEvent id="Catch_StockUpdateConfirmed" name="Stock Update Confirmed">
+      <bpmn:incoming>P_UpdateConfirmed</bpmn:incoming>
+      <bpmn:outgoing>P_StockUpdateCompleted</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDef_StockUpdateConfirmed" messageRef="Msg_StockUpdateConfirmed" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="P_SubmitStockUpdate" sourceRef="Task_UpdateQuantityAndAvailability" targetRef="Task_SendStockUpdate" />
+    <bpmn:sequenceFlow id="P_WaitForStockResponse" sourceRef="Task_SendStockUpdate" targetRef="Gateway_WaitStockUpdateResponse" />
+    <bpmn:sequenceFlow id="P_EditStockDetails" sourceRef="Gateway_MergeStockUpdateCorrection" targetRef="Task_UpdateQuantityAndAvailability" />
+    <bpmn:sequenceFlow id="P_StockUpdateStarted" sourceRef="Start_StockUpdateNeeded" targetRef="Gateway_MergeStockUpdateCorrection" />
+    <bpmn:sequenceFlow id="P_CorrectionRequested" sourceRef="Gateway_WaitStockUpdateResponse" targetRef="Catch_StockCorrectionRequested" />
+    <bpmn:sequenceFlow id="P_UpdateConfirmed" sourceRef="Gateway_WaitStockUpdateResponse" targetRef="Catch_StockUpdateConfirmed" />
+    <bpmn:sequenceFlow id="P_RetryStockUpdate" sourceRef="Catch_StockCorrectionRequested" targetRef="Gateway_MergeStockUpdateCorrection" />
+    <bpmn:sequenceFlow id="P_StockUpdateCompleted" sourceRef="Catch_StockUpdateConfirmed" targetRef="End_ProducerStockUpdated" />
+    <bpmn:exclusiveGateway id="Gateway_MergeStockUpdateCorrection" name="Merge Stock Update and Correction">
+      <bpmn:incoming>P_StockUpdateStarted</bpmn:incoming>
+      <bpmn:incoming>P_RetryStockUpdate</bpmn:incoming>
+      <bpmn:outgoing>P_EditStockDetails</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+  </bpmn:process>
+  <bpmn:message id="Msg_RestockStarted" name="RestockStarted" />
+  <bpmn:message id="Msg_ZeroStockNotice" name="ZeroStockNotice" />
+  <bpmn:message id="Msg_ProductListed" name="brfn.inventory.product-listed" />
+  <bpmn:error id="Error_StockDeductionFailed" name="INVENTORY_DEDUCTION_FAILED" errorCode="INVENTORY_DEDUCTION_FAILED" />
+  <bpmn:error id="Error_StockRecordUpdateFailed" name="INVENTORY_UPDATE_FAILED" errorCode="INVENTORY_UPDATE_FAILED" />
+  <bpmn:message id="Msg_RestockCorrectionRequested" name="brfn.inventory.restock-correction-requested" />
+  <bpmn:message id="Msg_StockUpdateConfirmed" name="brfn.inventory.stock-update-confirmed" />
+  <bpmndi:BPMNDiagram id="Diagram_InventoryLifecycle">
+    <bpmndi:BPMNPlane id="Plane_InventoryLifecycle" bpmnElement="Collaboration_InventoryManagement">
+      <bpmndi:BPMNShape id="Participant_07m377c_di" bpmnElement="Pool_BRFNPlatform" isHorizontal="true">
+        <dc:Bounds x="160" y="400" width="1978" height="530" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0uhxbzk_di" bpmnElement="Lane_MarketplaceAdmin" isHorizontal="true">
+        <dc:Bounds x="190" y="760" width="1948" height="170" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0xqeupp_di" bpmnElement="Lane_InventoryManagement" isHorizontal="true">
+        <dc:Bounds x="190" y="400" width="1948" height="360" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0j6bo0m_di" bpmnElement="Gateway_StockDepleted" isMarkerVisible="true">
+        <dc:Bounds x="515" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="470" y="502" width="59" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1x2rndx_di" bpmnElement="End_ProductStillAvailable">
+        <dc:Bounds x="622" y="452" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="600" y="495" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_14qgess_di" bpmnElement="Task_UnpublishOutOfStockProduct">
+        <dc:Bounds x="630" y="600" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hm0yjr_di" bpmnElement="Task_NotifyProducerZeroStock">
+        <dc:Bounds x="800" y="600" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0lk87xo_di" bpmnElement="End_ProductOutOfStock">
+        <dc:Bounds x="972" y="622" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="953" y="665" width="74" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_19dnhab_di" bpmnElement="Start_CustomerOrderReceived">
+        <dc:Bounds x="270" y="512" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="248" y="475" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_11zjxh8_di" bpmnElement="End_SeasonalProductArchived">
+        <dc:Bounds x="1792" y="622" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1767" y="665" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_01wynj9_di" bpmnElement="Task_RepublishProduct">
+        <dc:Bounds x="1790" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0lby2m8_di" bpmnElement="Gateway_SeasonalCheck" isMarkerVisible="true">
+        <dc:Bounds x="1685" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1680" y="467" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1d4j2ic_di" bpmnElement="Task_UpdateStockRecord">
+        <dc:Bounds x="1530" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0bia400_di" bpmnElement="Gateway_RestockDetailsValid" isMarkerVisible="true">
+        <dc:Bounds x="1425" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1408" y="468" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1tr8yqo_di" bpmnElement="Task_DeductInventory">
+        <dc:Bounds x="360" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1gdv6p0_di" bpmnElement="Task_InvestigateInventoryError">
+        <dc:Bounds x="630" y="810" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1v33t7e_di" bpmnElement="End_InventoryErrorHandled">
+        <dc:Bounds x="832" y="832" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="807" y="875" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hl38sw_di" bpmnElement="Task_CheckRestockDetails">
+        <dc:Bounds x="1228" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qfdiju_di" bpmnElement="Task_RequestCorrectedDetails">
+        <dc:Bounds x="1400" y="630" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hc4b5m_di" bpmnElement="End_RestockCorrectionRequested">
+        <dc:Bounds x="1522" y="652" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1513" y="695" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_14787r2_di" bpmnElement="Start_RestockRequested">
+        <dc:Bounds x="1062" y="512" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1041" y="555" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0zmol6i_di" bpmnElement="End_ProductAvailable">
+        <dc:Bounds x="2062" y="512" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2037" y="555" width="86" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02qelft_di" bpmnElement="Task_ConfirmStockUpdate">
+        <dc:Bounds x="1920" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1rk53xj_di" bpmnElement="Gateway_MergeInventoryErrors" isMarkerVisible="true">
+        <dc:Bounds x="485" y="825" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="470" y="882" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0kdukts_di" bpmnElement="Start_ProductListed">
+        <dc:Bounds x="1062" y="622" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1045" y="665" width="71" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1gomthx_di" bpmnElement="Task_InitialiseInventoryRecord">
+        <dc:Bounds x="1150" y="600" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_14i6niw_di" bpmnElement="End_InventoryRecordInitialised">
+        <dc:Bounds x="1302" y="622" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1278" y="665" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0or3rmr_di" bpmnElement="Boundary_StockRecordUpdateFailed">
+        <dc:Bounds x="1562" y="552" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1543" y="595" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1em0qi6_di" bpmnElement="Boundary_StockDeductionFailed">
+        <dc:Bounds x="392" y="552" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="377" y="595" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0wy1r75_di" bpmnElement="F_CheckStockDepletion">
+        <di:waypoint x="460" y="530" />
+        <di:waypoint x="515" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tmlmsm_di" bpmnElement="F_StockRemaining">
+        <di:waypoint x="540" y="505" />
+        <di:waypoint x="540" y="470" />
+        <di:waypoint x="622" y="470" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="562" y="485" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qsr3io_di" bpmnElement="F_StockDepleted">
+        <di:waypoint x="540" y="555" />
+        <di:waypoint x="540" y="640" />
+        <di:waypoint x="630" y="640" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="546" y="595" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03xnpnp_di" bpmnElement="F_UnpublishedToNotification">
+        <di:waypoint x="730" y="640" />
+        <di:waypoint x="800" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0j72yd7_di" bpmnElement="F_ZeroStockNotificationComplete">
+        <di:waypoint x="900" y="640" />
+        <di:waypoint x="972" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f4tlct_di" bpmnElement="F_OrderToDeduction">
+        <di:waypoint x="306" y="530" />
+        <di:waypoint x="360" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14vxvf8_di" bpmnElement="F_OutsideSeason">
+        <di:waypoint x="1710" y="555" />
+        <di:waypoint x="1710" y="640" />
+        <di:waypoint x="1792" y="640" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1718" y="595" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jwuqs1_di" bpmnElement="F_WithinSeason">
+        <di:waypoint x="1735" y="530" />
+        <di:waypoint x="1790" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1754" y="512" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rtzhel_di" bpmnElement="F_RepublishedToConfirmation">
+        <di:waypoint x="1890" y="530" />
+        <di:waypoint x="1920" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wzpp0o_di" bpmnElement="F_CheckSeasonalAvailability">
+        <di:waypoint x="1630" y="530" />
+        <di:waypoint x="1685" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qlh89w_di" bpmnElement="F_ValidRestock">
+        <di:waypoint x="1475" y="530" />
+        <di:waypoint x="1530" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1494" y="502" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03oe4oq_di" bpmnElement="F_CheckRestockValidity">
+        <di:waypoint x="1328" y="530" />
+        <di:waypoint x="1425" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iqbup8_di" bpmnElement="F_InvalidRestock">
+        <di:waypoint x="1450" y="555" />
+        <di:waypoint x="1450" y="630" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1458" y="590" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1d17q9q_di" bpmnElement="F_InvestigateInventoryError">
+        <di:waypoint x="535" y="850" />
+        <di:waypoint x="630" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mn8wbw_di" bpmnElement="F_InventoryErrorHandled">
+        <di:waypoint x="730" y="850" />
+        <di:waypoint x="832" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_179ys2h_di" bpmnElement="F_DeductionError">
+        <di:waypoint x="410" y="588" />
+        <di:waypoint x="410" y="850" />
+        <di:waypoint x="485" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dlc6iq_di" bpmnElement="F_RecordUpdateError">
+        <di:waypoint x="1580" y="588" />
+        <di:waypoint x="1580" y="780" />
+        <di:waypoint x="510" y="780" />
+        <di:waypoint x="510" y="825" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0diizhe_di" bpmnElement="F_RestockToValidation">
+        <di:waypoint x="1098" y="530" />
+        <di:waypoint x="1228" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0oxfif5_di" bpmnElement="F_RestockCorrectionSent">
+        <di:waypoint x="1500" y="670" />
+        <di:waypoint x="1522" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16qm8ek_di" bpmnElement="F_StockConfirmationComplete">
+        <di:waypoint x="2020" y="530" />
+        <di:waypoint x="2062" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mhlhrc_di" bpmnElement="F_InitialiseListedProduct">
+        <di:waypoint x="1098" y="640" />
+        <di:waypoint x="1150" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xm32tp_di" bpmnElement="F_InventoryInitialised">
+        <di:waypoint x="1250" y="640" />
+        <di:waypoint x="1302" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_0w6h83i_di" bpmnElement="Pool_Customer" isHorizontal="true">
+        <dc:Bounds x="160" y="970" width="1978" height="60" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_19znl18_di" bpmnElement="Pool_Producer" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1978" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0oo4dq4_di" bpmnElement="Task_SendStockUpdate">
+        <dc:Bounds x="1030" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_14qhkuu_di" bpmnElement="Task_UpdateQuantityAndAvailability">
+        <dc:Bounds x="830" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ntquc1_di" bpmnElement="Start_StockUpdateNeeded">
+        <dc:Bounds x="272" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="245" y="156" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0g6xw4t_di" bpmnElement="Gateway_WaitStockUpdateResponse">
+        <dc:Bounds x="1285" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1285" y="148" width="50" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1002gfy_di" bpmnElement="Catch_StockCorrectionRequested">
+        <dc:Bounds x="1402" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1448" y="196" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0xo20i3_di" bpmnElement="End_ProducerStockUpdated">
+        <dc:Bounds x="1662" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1644" y="235" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_02ipi33_di" bpmnElement="Catch_StockUpdateConfirmed">
+        <dc:Bounds x="1532" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1516" y="225" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0l5ph1s_di" bpmnElement="Gateway_MergeStockUpdateCorrection" isMarkerVisible="true">
+        <dc:Bounds x="715" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="709" y="242" width="62" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_05yrav2_di" bpmnElement="P_SubmitStockUpdate">
+        <di:waypoint x="930" y="210" />
+        <di:waypoint x="1030" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0yaexka_di" bpmnElement="P_WaitForStockResponse">
+        <di:waypoint x="1130" y="210" />
+        <di:waypoint x="1285" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e2tk28_di" bpmnElement="P_EditStockDetails">
+        <di:waypoint x="765" y="210" />
+        <di:waypoint x="830" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_066x6is_di" bpmnElement="P_StockUpdateStarted">
+        <di:waypoint x="308" y="210" />
+        <di:waypoint x="715" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qja00s_di" bpmnElement="P_CorrectionRequested">
+        <di:waypoint x="1335" y="210" />
+        <di:waypoint x="1402" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11jbvnq_di" bpmnElement="P_UpdateConfirmed">
+        <di:waypoint x="1310" y="235" />
+        <di:waypoint x="1310" y="280" />
+        <di:waypoint x="1532" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rks9ka_di" bpmnElement="P_RetryStockUpdate">
+        <di:waypoint x="1420" y="192" />
+        <di:waypoint x="1420" y="140" />
+        <di:waypoint x="740" y="140" />
+        <di:waypoint x="740" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pvlygm_di" bpmnElement="P_StockUpdateCompleted">
+        <di:waypoint x="1568" y="280" />
+        <di:waypoint x="1615" y="280" />
+        <di:waypoint x="1615" y="210" />
+        <di:waypoint x="1662" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jl7x3b_di" bpmnElement="M_ZeroStockNotice">
+        <di:waypoint x="850" y="600" />
+        <di:waypoint x="850" y="414" />
+        <di:waypoint x="290" y="414" />
+        <di:waypoint x="290" y="228" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="296" y="353" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14muwnw_di" bpmnElement="M_CustomerOrder">
+        <di:waypoint x="288" y="970" />
+        <di:waypoint x="288" y="548" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="300" y="863" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pasb69_di" bpmnElement="M_StockUpdateSubmitted">
+        <di:waypoint x="1080" y="250" />
+        <di:waypoint x="1080" y="512" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1087" y="356" width="113" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t6aib3_di" bpmnElement="M_RestockCorrectionRequested">
+        <di:waypoint x="1420" y="630" />
+        <di:waypoint x="1420" y="228" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1343" y="350" width="73" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ze9j9s_di" bpmnElement="M_StockUpdateConfirmed">
+        <di:waypoint x="1970" y="490" />
+        <di:waypoint x="1970" y="394" />
+        <di:waypoint x="1550" y="394" />
+        <di:waypoint x="1550" y="298" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1724" y="376" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
