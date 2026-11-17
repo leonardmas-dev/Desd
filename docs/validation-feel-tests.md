@@ -1,6 +1,6 @@
 # Validation FEEL Evaluation Record
 
-Current model status (17 November 2026): `Task_VerifyCertification` is now a call activity referencing `Process_ExternalCertification` in `models/certification-verification.bpmn`. The child process contains the `verify-organic-cert` service task. The result, retry, correction and review contracts below remain unchanged. The earlier engine evidence records the previous service-task version; it does not establish runtime acceptance of the reconciled call-activity version. See the reconciliation section at the end of this file for current checks and deployment prerequisites.
+Current local integration status (17 November 2026): the call-activity model is retained, all three validation form IDs are linked, and a runnable Python job-worker implementation plus local HTTP certification simulator is supplied under `camunda/`. Local checks passed; this integration has not yet been deployed or tested on the shared engine. The earlier engine evidence below records the previous service-task version and does not establish acceptance of the current call-activity integration. See the final section for the latest results and remaining work. Earlier missing-form and worker-prerequisite statements are historical.
 
 These are actual evaluations with feelin 8.2.0, the evaluator used by the standalone playground linked in the Week 10 FEEL lab. Expressions were read from the current BPMN source. The leading Camunda expression marker was removed for evaluation as instructed by the lab.
 
@@ -152,3 +152,33 @@ These are offline graph, expression, XML and rendering checks. Error propagation
 5. Run new development-engine instances covering valid, invalid, unavailable, explicit error, timeout, exhausted attempts, review approval and review rejection. In Operate verify child completion/error propagation and cancellation after timeout; confirm that no claimed organic product reaches publication without a valid check.
 
 The reconciled source is pushed to `sprint-2-validation-execution` for review. The engine evidence above belongs to the earlier service-task version; the reconciled call-activity version still needs deployment and integrated engine testing. Full Card 36 service-and-form acceptance remains pending these integrations.
+
+## Form and worker integration (17 November 2026, local implementation)
+
+### Captured shared-model differences
+
+The shared Camunda resource had diverged from the merged caller: validation, verification and publication were immediate script tasks. The validation script expected `category`, `unitPrice`, `startDate`, `endDate`, `postcode` and `allergens`, while the shared forms supply `productCategory`, `productPrice`, `availableStart`, `availableEnd`, `productOrigin` and `productAllergen`. An actual form-shaped payload failed that script's validation. Its verification script also defaulted a missing simulated result to `valid` and incremented the failure counter in addition to the retry timer. That counted two unavailable attempts as four failures instead of allowing the agreed three attempts.
+
+The integration keeps the merged call activity and the existing form field names. It does not copy the divergent scripts over the caller. No inventory model, SR model or teammate's shared Camunda resource was edited during this local integration.
+
+### Files and ownership
+
+- `camunda/forms/SubmitProductDetails.form` and `CorrectProductDetails.form` are copies of Leonard's captured shared forms, with a required product description, optional relevant harvest/best-before date inputs and the existing positive initial-quantity rule aligned locally. Existing keys and category values are preserved. `ManualCertificationReview.form` is the captured review form, including its Boolean checkbox. The new local copies need the form owner's review before replacing shared versions.
+- `models/validation.bpmn` links those three IDs and maps `validationMessage` so the correction form can display the feedback. Producer remains non-executable and descriptive; the Marketplace review task is executable. A form reference does not make the Producer pool run in Tasklist.
+- `camunda/service-workers/validation_worker.py` supplies the five existing job types and external-producer submit/correct message commands, using the job-worker approach taught in Week 8. It is a new proposed integration implementation in the area of Card 33, whose team owner remains Thierno. His shared scripts have not been overwritten. The worker validates canonical form keys, calls the simulated HTTP verifier, persists a demonstration catalogue and emits correlated workflow messages. It never defaults an unknown certificate to valid or increments the BPMN failure counter.
+- `camunda/service-workers/mock_certification.py` supplies the case-permitted simulated verification service, including controlled invalid, unavailable, error and delayed outcomes. Its local registry can recover without changing process variables. This is not an official certifier API.
+- `camunda/README.md` gives deployment, existing-client configuration, demonstration commands and engine acceptance scenarios. The local SQLite catalogue demonstrates persistence; it does not integrate the separate live inventory database or replace its owners' tasks. Runtime data is ignored by Git.
+
+### Verification of this integration
+
+`python3 -m unittest discover -s camunda/tests -v`: **32 tests passed**. These cover actual loopback HTTP verification, unknown/missing certificate safety, explicit error and slow-request outcomes, cancelled completion handling, registry outage/recovery, form keys and IDs, Boolean claim validation, required data and dates, correction feedback, message correlation, single counter ownership, publication guards and idempotent SQLite persistence. They use fake Camunda REST responses, not a live engine. A previous certificate error cannot hide a new mandatory-field error after correction.
+
+The actual BPMN expressions were also re-evaluated with feelin 8.2.0: **17 graph scenarios passed, using 340 evaluations**. This is an evaluation count, not 340 distinct cases. The three-unavailable, three-timeout and three-error routes each reach review with count 3. Approval causes a fresh verification attempt; rejection requests correction. Moddle imports have zero warnings; Camunda 8.9 and 8.10 compatibility lint has **zero errors and zero warnings**. The former local missing-review-form warning is resolved. Producer flow signatures and existing parent sequence-flow conditions are preserved. Visible diagram geometry is unchanged, so the existing BPMN exports remain representative.
+
+### Still required for Card 36 acceptance
+
+1. Compare the shared resources again for concurrent team edits, then import the three forms and deploy the called process and parent to the same development cluster and tenant.
+2. Run these workers using an existing authorised cluster API client. Confirm `marketplace-reviewers` assignment and complete both review decisions in Tasklist.
+3. Capture fresh Operate evidence for valid, invalid, unavailable, explicit error, timeout, three exhausted attempts and service recovery after review. Check that the timeout cancels the called child and that no organic product is published without a valid check. Earlier version-2 screenshots cannot substitute for this evidence.
+
+No new shared deployment, live worker run, Tasklist assignment check or full Card 36 acceptance is established by these local results. Inventory workers, inventory integration, DMN and final team submission checks remain separate.

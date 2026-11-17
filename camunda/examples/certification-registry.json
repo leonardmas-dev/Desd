@@ -1,0 +1,7 @@
+{
+  "available": true,
+  "certificates": {
+    "BRFN-VALID-001": true,
+    "BRFN-INVALID-001": false
+  }
+}

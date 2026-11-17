@@ -32,10 +32,14 @@ Review approval retries verification; it does not publish.</bpmn:text>
     <bpmn:association id="Association_Certification" sourceRef="Task_VerifyCertification" targetRef="Note_CertificationHandoff" associationDirection="None" />
   </bpmn:collaboration>
   <bpmn:process id="Process_ProducerSubmission" name="Producer submission and corrections" isExecutable="false">
+    <bpmn:documentation>Descriptive external producer process. SubmitProductDetails and CorrectProductDetails document the producer-facing input contract. Initial and corrected messages can be sent with the provided submit/correct commands; attaching these forms does not make this non-executable pool run in Tasklist. The executable Marketplace manual-review user task uses ManualCertificationReview.</bpmn:documentation>
     <bpmn:startEvent id="Start_Producer" name="List a product">
       <bpmn:outgoing>P1</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:userTask id="Task_SubmitDetails" name="Submit product details">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formId="SubmitProductDetails" bindingType="latest" />
+      </bpmn:extensionElements>
       <bpmn:incoming>P1</bpmn:incoming>
       <bpmn:outgoing>P2</bpmn:outgoing>
     </bpmn:userTask>
@@ -67,6 +71,9 @@ Review approval retries verification; it does not publish.</bpmn:text>
       <bpmn:outgoing>P8</bpmn:outgoing>
     </bpmn:intermediateCatchEvent>
     <bpmn:userTask id="Task_CorrectDetails" name="Correct product details">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formId="CorrectProductDetails" bindingType="latest" />
+      </bpmn:extensionElements>
       <bpmn:incoming>P8</bpmn:incoming>
       <bpmn:outgoing>P9</bpmn:outgoing>
     </bpmn:userTask>
@@ -97,7 +104,7 @@ Review approval retries verification; it does not publish.</bpmn:text>
       <bpmn:incoming>F5</bpmn:incoming>
     </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="Task_ValidateDetails" name="Validate product details">
-      <bpmn:documentation>Validate product name, description, category, price, quantity, availability period and farm origin. Handle harvest, allergens, organic certificate and best-before information where relevant. Return validationPassed as a Boolean and clear validationErrors. Check that organicClaimed is Boolean before reporting validation success. Exact field limits must come from agreed requirements.</bpmn:documentation>
+      <bpmn:documentation>Job type validate-product-details. Consume the shared form keys productId, productName, description, productCategory, productPrice, stockQuantity, availableStart, availableEnd, productOrigin and Boolean organicClaimed. Check optional relevant harvestDate, bestBeforeDate, productAllergen and organicCertNum. Return Boolean validationPassed, validationErrors and validationMessage for the correction form. Missing or wrongly typed organicClaimed is a validation error, never an implicit non-organic claim. Canonical form keys are used directly; the worker does not expect the older category/unitPrice/startDate/postcode aliases.</bpmn:documentation>
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="validate-product-details" />
         <zeebe:ioMapping>
@@ -105,6 +112,7 @@ Review approval retries verification; it does not publish.</bpmn:text>
           <zeebe:output source="= validationErrors" target="validationErrors" />
           <zeebe:output source="= organicClaimed" target="organicClaimed" />
           <zeebe:output source="= 0" target="certificationFailures" />
+          <zeebe:output source="= validationMessage" target="validationMessage" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>F2</bpmn:incoming>
@@ -245,6 +253,7 @@ Review approval retries verification; it does not publish.</bpmn:text>
         </zeebe:ioMapping>
         <zeebe:userTask />
         <zeebe:assignmentDefinition candidateGroups="marketplace-reviewers" />
+        <zeebe:formDefinition formId="ManualCertificationReview" bindingType="latest" />
       </bpmn:extensionElements>
       <bpmn:incoming>F_Review</bpmn:incoming>
       <bpmn:outgoing>F_ReviewDecision</bpmn:outgoing>
