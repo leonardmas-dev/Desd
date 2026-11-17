@@ -138,6 +138,28 @@
             "SD Traceability": "SD-14, SD-17",
             "BPMN Traceability": "Inventory seasonal replenishment decision"
           }
+        },
+        {
+          "id": "b9e72f3c-c002-49b1-872d-64dffafe41f9",
+          "text": "Customer trust",
+          "type": "istar.Quality",
+          "x": 1880,
+          "y": 220,
+          "customProperties": {
+            "SR Scope": "Softgoal",
+            "BPMN Traceability": "Certification validity and publication controls"
+          }
+        },
+        {
+          "id": "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e",
+          "text": "Data quality",
+          "type": "istar.Quality",
+          "x": 920,
+          "y": 220,
+          "customProperties": {
+            "SR Scope": "Softgoal",
+            "BPMN Traceability": "Product validation, correction loop and certification result"
+          }
         }
       ],
       "customProperties": {
@@ -182,7 +204,7 @@
   "dependencies": [
     {
       "id": "4f91b182-00c2-4520-b033-874de69cb341",
-      "text": "Product Successfully Listed",
+      "text": "SD-01\nProduct Successfully Listed",
       "type": "istar.Goal",
       "x": 300,
       "y": 180,
@@ -194,7 +216,7 @@
     },
     {
       "id": "7fe1c94a-b9da-46bb-970b-f8e336280f25",
-      "text": "Complete Product Submission Data",
+      "text": "SD-02\nComplete Product Submission Data",
       "type": "istar.Resource",
       "x": 300,
       "y": 680,
@@ -206,7 +228,7 @@
     },
     {
       "id": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
-      "text": "Organic Claim Checked",
+      "text": "SD-06\nOrganic Claim Checked",
       "type": "istar.Task",
       "x": 300,
       "y": 1180,
@@ -218,7 +240,7 @@
     },
     {
       "id": "2f979215-9dfb-4df9-9e24-5fda7723624c",
-      "text": "Updated Quantity And Seasonal Dates",
+      "text": "SD-12\nUpdated Quantity And Seasonal Dates",
       "type": "istar.Resource",
       "x": 300,
       "y": 1000,
@@ -230,7 +252,7 @@
     },
     {
       "id": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
-      "text": "Current Product Availability",
+      "text": "SD-17\nCurrent Product Availability",
       "type": "istar.Goal",
       "x": 2440,
       "y": 820,
@@ -367,6 +389,34 @@
       "type": "istar.DependencyLink",
       "source": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
       "target": "G_Availability"
+    },
+    {
+      "id": "81f156d1-7089-4c31-b83a-be355feed50c",
+      "type": "istar.ContributionLink",
+      "source": "T_Verify",
+      "target": "b9e72f3c-c002-49b1-872d-64dffafe41f9",
+      "label": "make"
+    },
+    {
+      "id": "abe781b3-3e5c-4275-8cc3-ab32910f858f",
+      "type": "istar.ContributionLink",
+      "source": "T_Publish",
+      "target": "b9e72f3c-c002-49b1-872d-64dffafe41f9",
+      "label": "make"
+    },
+    {
+      "id": "c1aad84c-1039-461a-835a-e75ce2c46c0a",
+      "type": "istar.ContributionLink",
+      "source": "T_Check",
+      "target": "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e",
+      "label": "make"
+    },
+    {
+      "id": "a1228cbe-fab4-45ca-9428-80ac5b227a62",
+      "type": "istar.ContributionLink",
+      "source": "T_Verify",
+      "target": "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e",
+      "label": "help"
     }
   ],
   "display": {
@@ -446,18 +496,30 @@
     "d40d2158-8ba1-4c31-9d17-9d70aae9c29e": {
       "width": 180,
       "height": 75
+    },
+    "b9e72f3c-c002-49b1-872d-64dffafe41f9": {
+      "width": 210,
+      "height": 80
+    },
+    "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e": {
+      "width": 210,
+      "height": 80
     }
   },
   "tool": "pistar.2.1.0",
   "istar": "2.0",
-  "saveDate": "Wed, 11 Nov 2026 00:00:00 GMT",
+  "saveDate": "Tue, 17 Nov 2026 00:00:00 GMT",
   "diagram": {
     "width": 2900,
     "height": 1650,
     "name": "Use Case 1 Marketplace SR goals and tasks",
     "customProperties": {
-      "Scope": "Ahmed Card 17. Taha adds softgoals and contributions under Card 19.",
-      "Notation": "Classic lecture subset. AndRefinementLink renders a short bar at a parent TASK and represents task decomposition. OrRefinementLink renders task-to-goal means-end. No OR branching or alternative business policies are asserted."
+      "Scope": "Use Case 1: Producer Product Listing and Inventory Management. Ahmed Card 17 goals, tasks and SD traceability; Taha Card 19 softgoals and contributions.",
+      "Notation": "Classic lecture subset. AndRefinementLink renders a short bar at the parent TASK (required decomposition). OrRefinementLink renders a task-to-goal means-end arrow. Contribution links are labelled arrows towards softgoals. These links do not specify process order.",
+      "Purpose": "Show how marketplace tasks contribute to product quality, customer trust and reliable publication decisions.",
+      "Author contribution": "Ahmed: Marketplace goals, tasks, decomposition, means-end links and numbered SD dependencies. Taha: Customer trust and Data quality softgoals and four contribution links.",
+      "Legend": "Goal = required result; Task = action; Resource = information or output; Quality = softgoal; make = strong positive contribution; help = supporting positive contribution.",
+      "Contribution assumptions": "The make/help strengths are the team's qualitative judgements to validate with stakeholders; they are not measured guarantees of customer trust or data quality. Customer trust concerns confidence in accurate listings and checked organic claims; Data quality concerns completeness and accuracy of product information."
     }
   }
 }
