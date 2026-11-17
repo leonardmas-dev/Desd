@@ -23,6 +23,13 @@
     <bpmn:messageFlow id="M_Correct" sourceRef="Task_SendCorrections" targetRef="Catch_CorrectedDetails" name="Corrected product data" />
     <bpmn:messageFlow id="M_Feedback" sourceRef="Task_RequestCorrection" targetRef="Catch_Correction" name="Validation feedback" />
     <bpmn:messageFlow id="M_Published" sourceRef="Task_NotifyPublished" targetRef="Catch_Published" name="Publication confirmed" />
+    <bpmn:textAnnotation id="Note_CertificationHandoff">
+      <bpmn:text>Claimed organic certification must be valid before publication.
+Invalid: request correction and revalidate.
+Unavailable / timeout: bounded retries, then manual review.
+Review approval retries verification; it does not publish.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Certification" sourceRef="Task_VerifyCertification" targetRef="Note_CertificationHandoff" associationDirection="None" />
   </bpmn:collaboration>
   <bpmn:process id="Process_ProducerSubmission" name="Producer submission and corrections" isExecutable="false">
     <bpmn:startEvent id="Start_Producer" name="List a product">
@@ -79,7 +86,7 @@
     <bpmn:sequenceFlow id="P10" sourceRef="Task_SendCorrections" targetRef="Gateway_ProducerMerge" />
   </bpmn:process>
   <bpmn:process id="Process_ProductValidation" name="Use Case 1 - Product validation and certification" isExecutable="true">
-    <bpmn:documentation>Ahmed Cards 29 and 36: Marketplace System is the executable participant; the producer pool is descriptive. Validate product fields and Boolean organicClaimed before routing. A claimed organic certificate must return valid before publication. Invalid certification returns to producer correction. SERVICE_UNAVAILABLE business errors, unavailable results and interrupting certification timeouts enter a bounded retry path. After three failed attempts, a human review is required. An approve decision retries verification; reject requests correction. Review never publishes a claimed organic product without verification. The three-attempt limit follows the existing team functionality document. Timeout and exponential retry base delay are configurable demonstration settings, not Use Case 1 business rules. Thierno Card 33 owns workers/simulated service; Leonard Card 32 owns the manual review form. Taha Card 23 external-call integration must be reconciled with his shared source before replacing that work.</bpmn:documentation>
+    <bpmn:documentation>Use Case 1 product validation and certification. Marketplace System is executable; the producer pool remains descriptive. Validate mandatory product fields and Boolean organicClaimed before routing. A claimed organic certificate must return valid before publication. Invalid certification requests producer correction and revalidation. The certification call activity invokes Process_ExternalCertification; its worker performs the external or simulated verification. SERVICE_UNAVAILABLE business errors, unavailable results and interrupting timeouts use the bounded retry route. After three failed attempts manual review is required. Approval authorizes another verification attempt; it never bypasses verification. Rejection requests correction. The three-attempt limit follows the team functionality specification; timeout and exponential retry base delay are configurable demonstration settings rather than additional case-study business rules. Taha Card 23 supplies the call and external interaction; Ahmed Cards 29 and 36 supply executable conditions and exception routing. Thierno Card 33 supplies workers; Leonard Card 32 supplies the review form.</bpmn:documentation>
     <bpmn:startEvent id="Start_ProductSubmitted" name="Product submitted">
       <bpmn:messageEventDefinition messageRef="Msg_Submitted" />
       <bpmn:outgoing>F1</bpmn:outgoing>
@@ -113,17 +120,18 @@
       <bpmn:outgoing>F_Organic</bpmn:outgoing>
       <bpmn:outgoing>F_NotOrganic</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_VerifyCertification" name="Check organic certification">
-      <bpmn:documentation>Worker type verify-organic-cert. Complete with certificationResult: valid, invalid or unavailable. Alternatively throw BPMN error SERVICE_UNAVAILABLE for service unavailability. Never report valid without verification. Each attempt is interrupted after certificationTimeout (ISO 8601 duration); PT30S is the demonstration fallback. Technical job failures retain default Zeebe retries and can raise incidents; business unavailability uses the explicit bounded route.</bpmn:documentation>
+    <bpmn:callActivity id="Task_VerifyCertification" name="Verify organic certification">
+      <bpmn:documentation>Call the deployed Process_ExternalCertification process in certification-verification.bpmn. It starts at a none start event and uses a verify-organic-cert job worker to contact the external or simulated service. Return only certificationResult: valid, invalid or unavailable. Clear the previous result at the start of each attempt. SERVICE_UNAVAILABLE errors thrown by the child worker propagate to the attached interrupting error boundary. The attached interrupting timer cancels the call and its child instance on timeout. Both boundaries retain the existing bounded retry and manual review routes. Deploy the child process before starting this parent process; latest binding allows the two resources to be deployed separately.</bpmn:documentation>
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="verify-organic-cert" />
+        <zeebe:calledElement processId="Process_ExternalCertification" bindingType="latest" propagateAllParentVariables="true" propagateAllChildVariables="true" />
         <zeebe:ioMapping>
+          <zeebe:input source="= null" target="certificationResult" />
           <zeebe:output source="= certificationResult" target="certificationResult" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:outgoing>F6</bpmn:outgoing>
       <bpmn:incoming>F_CheckCertification</bpmn:incoming>
-    </bpmn:serviceTask>
+    </bpmn:callActivity>
     <bpmn:exclusiveGateway id="Gateway_PublicationJoin" name="">
       <bpmn:incoming>F_NotOrganic</bpmn:incoming>
       <bpmn:outgoing>F7</bpmn:outgoing>
@@ -177,12 +185,6 @@
     <bpmn:sequenceFlow id="F7" sourceRef="Gateway_PublicationJoin" targetRef="Task_PublishProduct" />
     <bpmn:sequenceFlow id="F8" sourceRef="Task_PublishProduct" targetRef="Task_NotifyPublished" />
     <bpmn:sequenceFlow id="F9" sourceRef="Task_NotifyPublished" targetRef="End_ProductPublished" />
-    <bpmn:textAnnotation id="Note_CertificationHandoff">
-      <bpmn:text>Cards 29 / 36: executable routing, error, timeout and bounded retries.
-Card 33: simulated verifier / workers. Card 32: review form.
-Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
-    </bpmn:textAnnotation>
-    <bpmn:association id="Association_Certification" sourceRef="Task_VerifyCertification" targetRef="Note_CertificationHandoff" associationDirection="None" />
     <bpmn:exclusiveGateway id="Gateway_CertificationResult" name="Certification result?" default="F_UnexpectedResult">
       <bpmn:incoming>F6</bpmn:incoming>
       <bpmn:outgoing>F_CertValid</bpmn:outgoing>
@@ -305,7 +307,7 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
       <bpmndi:BPMNShape id="Shape_Task_SendSubmission" bpmnElement="Task_SendSubmission">
         <dc:Bounds x="390" y="128" width="150" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_ProducerMerge" bpmnElement="Gateway_ProducerMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_ProducerMerge" bpmnElement="Gateway_ProducerMerge" isMarkerVisible="true">
         <dc:Bounds x="600" y="143" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Gateway_WaitOutcome" bpmnElement="Gateway_WaitOutcome">
@@ -405,12 +407,18 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
         <di:waypoint x="70" y="410" />
         <di:waypoint x="828" y="410" />
         <di:waypoint x="828" y="281" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="80" y="710" width="130" height="35" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_M_Published" bpmnElement="M_Published">
         <di:waypoint x="2045" y="568" />
         <di:waypoint x="2045" y="370" />
         <di:waypoint x="958" y="370" />
         <di:waypoint x="958" y="126" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1475" y="335" width="160" height="30" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Shape_Start_ProductSubmitted" bpmnElement="Start_ProductSubmitted">
         <dc:Bounds x="90" y="590" width="36" height="36" />
@@ -418,37 +426,37 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
           <dc:Bounds x="55" y="634" width="106" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_ValidationMerge" bpmnElement="Gateway_ValidationMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_ValidationMerge" bpmnElement="Gateway_ValidationMerge" isMarkerVisible="true">
         <dc:Bounds x="190" y="583" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Task_ValidateDetails" bpmnElement="Task_ValidateDetails">
         <dc:Bounds x="280" y="568" width="150" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_DetailsValid" bpmnElement="Gateway_DetailsValid">
+      <bpmndi:BPMNShape id="Shape_Gateway_DetailsValid" bpmnElement="Gateway_DetailsValid" isMarkerVisible="true">
         <dc:Bounds x="490" y="583" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="455" y="641" width="120" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_OrganicClaim" bpmnElement="Gateway_OrganicClaim">
+      <bpmndi:BPMNShape id="Shape_Gateway_OrganicClaim" bpmnElement="Gateway_OrganicClaim" isMarkerVisible="true">
         <dc:Bounds x="630" y="583" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="595" y="641" width="120" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_CertificationMerge" bpmnElement="Gateway_CertificationMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_CertificationMerge" bpmnElement="Gateway_CertificationMerge" isMarkerVisible="true">
         <dc:Bounds x="765" y="583" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Task_VerifyCertification" bpmnElement="Task_VerifyCertification">
         <dc:Bounds x="875" y="568" width="170" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_CertificationResult" bpmnElement="Gateway_CertificationResult">
+      <bpmndi:BPMNShape id="Shape_Gateway_CertificationResult" bpmnElement="Gateway_CertificationResult" isMarkerVisible="true">
         <dc:Bounds x="1135" y="583" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1100" y="641" width="120" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_PublicationJoin" bpmnElement="Gateway_PublicationJoin">
+      <bpmndi:BPMNShape id="Shape_Gateway_PublicationJoin" bpmnElement="Gateway_PublicationJoin" isMarkerVisible="true">
         <dc:Bounds x="1630" y="583" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Task_PublishProduct" bpmnElement="Task_PublishProduct">
@@ -475,7 +483,7 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
           <dc:Bounds x="1010" y="650" width="110" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_RetryMerge" bpmnElement="Gateway_RetryMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_RetryMerge" bpmnElement="Gateway_RetryMerge" isMarkerVisible="true">
         <dc:Bounds x="1110" y="760" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Catch_RetryDelay" bpmnElement="Catch_RetryDelay">
@@ -484,25 +492,25 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
           <dc:Bounds x="1192" y="811" width="106" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_RetriesRemaining" bpmnElement="Gateway_RetriesRemaining">
+      <bpmndi:BPMNShape id="Shape_Gateway_RetriesRemaining" bpmnElement="Gateway_RetriesRemaining" isMarkerVisible="true">
         <dc:Bounds x="1340" y="760" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1305" y="818" width="120" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_ReviewMerge" bpmnElement="Gateway_ReviewMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_ReviewMerge" bpmnElement="Gateway_ReviewMerge" isMarkerVisible="true">
         <dc:Bounds x="1480" y="895" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Task_ReviewCertification" bpmnElement="Task_ReviewCertification">
         <dc:Bounds x="1600" y="880" width="170" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_ReviewApproved" bpmnElement="Gateway_ReviewApproved">
+      <bpmndi:BPMNShape id="Shape_Gateway_ReviewApproved" bpmnElement="Gateway_ReviewApproved" isMarkerVisible="true">
         <dc:Bounds x="1845" y="895" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1810" y="953" width="120" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_CorrectionMerge" bpmnElement="Gateway_CorrectionMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_CorrectionMerge" bpmnElement="Gateway_CorrectionMerge" isMarkerVisible="true">
         <dc:Bounds x="490" y="1135" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Task_RequestCorrection" bpmnElement="Task_RequestCorrection">
@@ -595,30 +603,30 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_CertInvalid" bpmnElement="F_CertInvalid">
-        <di:waypoint x="1160" y="633" />
-        <di:waypoint x="1160" y="1160" />
+        <di:waypoint x="1147.5" y="620.5" />
+        <di:waypoint x="1080" y="688" />
+        <di:waypoint x="1080" y="1160" />
         <di:waypoint x="540" y="1160" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1095" y="1137" width="95" height="20" />
+          <dc:Bounds x="980" y="1115" width="95" height="20" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_CertUnavailable" bpmnElement="F_CertUnavailable">
-        <di:waypoint x="1185" y="608" />
-        <di:waypoint x="1280" y="608" />
-        <di:waypoint x="1280" y="715" />
-        <di:waypoint x="1135" y="715" />
+        <di:waypoint x="1160" y="633" />
+        <di:waypoint x="1160" y="700" />
+        <di:waypoint x="1135" y="700" />
         <di:waypoint x="1135" y="760" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1215" y="692" width="95" height="20" />
+          <dc:Bounds x="1165" y="670" width="110" height="20" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_UnexpectedResult" bpmnElement="F_UnexpectedResult">
-        <di:waypoint x="1185" y="608" />
-        <di:waypoint x="1440" y="608" />
-        <di:waypoint x="1440" y="920" />
-        <di:waypoint x="1480" y="920" />
+        <di:waypoint x="1160" y="583" />
+        <di:waypoint x="1160" y="540" />
+        <di:waypoint x="1505" y="540" />
+        <di:waypoint x="1505" y="895" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1375" y="897" width="95" height="20" />
+          <dc:Bounds x="1515" y="840" width="125" height="20" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_ErrorRetry" bpmnElement="F_ErrorRetry">
@@ -628,9 +636,9 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_TimeoutRetry" bpmnElement="F_TimeoutRetry">
         <di:waypoint x="1003" y="666" />
-        <di:waypoint x="1003" y="730" />
-        <di:waypoint x="1135" y="730" />
-        <di:waypoint x="1135" y="760" />
+        <di:waypoint x="1003" y="850" />
+        <di:waypoint x="1135" y="850" />
+        <di:waypoint x="1135" y="810" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_WaitRetry" bpmnElement="F_WaitRetry">
         <di:waypoint x="1160" y="785.0" />
@@ -642,11 +650,11 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_RetryCertification" bpmnElement="F_RetryCertification">
         <di:waypoint x="1365" y="760" />
-        <di:waypoint x="1365" y="455" />
-        <di:waypoint x="790" y="455" />
+        <di:waypoint x="1365" y="480" />
+        <di:waypoint x="790" y="480" />
         <di:waypoint x="790" y="583" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="725" y="432" width="95" height="20" />
+          <dc:Bounds x="1245" y="705" width="95" height="20" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_RetriesExhausted" bpmnElement="F_RetriesExhausted">
@@ -666,20 +674,22 @@ Card 23: reconcile Taha external-call source before replacement.</bpmn:text>
         <di:waypoint x="1845" y="920.0" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_ReviewRetry" bpmnElement="F_ReviewRetry">
-        <di:waypoint x="1870" y="895" />
-        <di:waypoint x="1870" y="455" />
-        <di:waypoint x="790" y="455" />
-        <di:waypoint x="790" y="583" />
+        <di:waypoint x="1895" y="920" />
+        <di:waypoint x="1950" y="920" />
+        <di:waypoint x="1950" y="1040" />
+        <di:waypoint x="790" y="1040" />
+        <di:waypoint x="790" y="633" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="725" y="432" width="95" height="20" />
+          <dc:Bounds x="1900" y="940" width="95" height="20" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_ReviewCorrection" bpmnElement="F_ReviewCorrection">
         <di:waypoint x="1870" y="945" />
-        <di:waypoint x="1870" y="1160" />
-        <di:waypoint x="540" y="1160" />
+        <di:waypoint x="1870" y="1210" />
+        <di:waypoint x="515" y="1210" />
+        <di:waypoint x="515" y="1185" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1805" y="1137" width="95" height="20" />
+          <dc:Bounds x="1750" y="1180" width="95" height="20" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_F_RequestCorrection" bpmnElement="F_RequestCorrection">

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_CertificationVerification" targetNamespace="https://brfn.example/uc1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:collaboration id="Collaboration_CertificationVerification">
+    <bpmn:participant id="Pool_CertificationAdapter" name="Marketplace certification verification" processRef="Process_ExternalCertification" />
+    <bpmn:participant id="Pool_ExternalCertification" name="External Organic Certification Verification Service" />
+    <bpmn:messageFlow id="M_CertificationCheck" name="Organic certification check" sourceRef="Task_ExternalCertificationCheck" targetRef="Pool_ExternalCertification" />
+    <bpmn:messageFlow id="M_CertificationResult" name="Verification result / unavailability" sourceRef="Pool_ExternalCertification" targetRef="Task_ExternalCertificationCheck" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_ExternalCertification" name="Verify claimed organic certification" isExecutable="true">
+    <bpmn:documentation>Reusable certification verification process invoked by the validation call activity. This executable process is the marketplace adapter, not the independent certification organisation. A none start event is required for call-activity activation. The verify-organic-cert worker contacts the external or simulated service and returns certificationResult. Completing the child returns that variable to the caller, so no extra send-result worker is needed. The caller owns result routing, timeout, bounded retries and manual review. Taha Card 23 call/external-interaction design is integrated with Ahmed Cards 29 and 36. Card 33 supplies the actual worker implementation.</bpmn:documentation>
+    <bpmn:startEvent id="Start_ExternalCertification" name="Verification requested">
+      <bpmn:outgoing>E1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_ExternalCertificationCheck" name="Verify organic certification record">
+      <bpmn:documentation>Job type verify-organic-cert. The worker calls the external or simulated certification service and completes with certificationResult as the string valid, invalid or unavailable. It may alternatively throw BPMN error SERVICE_UNAVAILABLE for the explicit business unavailability route in the caller. A generic failed job retains Zeebe technical retries and incident handling. The message flows describe the worker/service interaction; they do not publish or correlate Camunda messages automatically. Repeated checks must be safe for the same submissionId. Never report valid without checking the claimed certification.</bpmn:documentation>
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="verify-organic-cert" />
+        <zeebe:ioMapping>
+          <zeebe:output source="= certificationResult" target="certificationResult" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>E1</bpmn:incoming>
+      <bpmn:outgoing>E2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_ExternalCertification" name="Verification result available">
+      <bpmn:incoming>E2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="E1" sourceRef="Start_ExternalCertification" targetRef="Task_ExternalCertificationCheck" />
+    <bpmn:sequenceFlow id="E2" sourceRef="Task_ExternalCertificationCheck" targetRef="End_ExternalCertification" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_CertificationVerification">
+    <bpmndi:BPMNPlane id="Plane_CertificationVerification" bpmnElement="Collaboration_CertificationVerification">
+      <bpmndi:BPMNShape id="Shape_Pool_CertificationAdapter" bpmnElement="Pool_CertificationAdapter" isHorizontal="true">
+        <dc:Bounds x="0" y="0" width="1000" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Pool_ExternalCertification" bpmnElement="Pool_ExternalCertification" isHorizontal="true">
+        <dc:Bounds x="0" y="400" width="1000" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_ExternalCertification" bpmnElement="Start_ExternalCertification">
+        <dc:Bounds x="130" y="95" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="85" y="140" width="130" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ExternalCertificationCheck" bpmnElement="Task_ExternalCertificationCheck">
+        <dc:Bounds x="360" y="73" width="210" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_ExternalCertification" bpmnElement="End_ExternalCertification">
+        <dc:Bounds x="790" y="95" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="745" y="140" width="130" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_E1" bpmnElement="E1">
+        <di:waypoint x="166" y="113" />
+        <di:waypoint x="360" y="113" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_E2" bpmnElement="E2">
+        <di:waypoint x="570" y="113" />
+        <di:waypoint x="790" y="113" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_CertificationCheck" bpmnElement="M_CertificationCheck">
+        <di:waypoint x="410" y="153" />
+        <di:waypoint x="410" y="400" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="240" y="300" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_CertificationResult" bpmnElement="M_CertificationResult">
+        <di:waypoint x="520" y="400" />
+        <di:waypoint x="520" y="153" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="300" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
