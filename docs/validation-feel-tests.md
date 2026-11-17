@@ -151,4 +151,4 @@ These are offline graph, expression, XML and rendering checks. Error propagation
 4. Card 32 must link the certification review form returning Boolean `reviewApproved` and verify reviewer assignment. The inventory investigation form is a separate form for a different process.
 5. Run new development-engine instances covering valid, invalid, unavailable, explicit error, timeout, exhausted attempts, review approval and review rejection. In Operate verify child completion/error propagation and cancellation after timeout; confirm that no claimed organic product reaches publication without a valid check.
 
-The reconciled source is local and has not been pushed or deployed. Full Card 36 service-and-form acceptance remains pending these integrations.
+The reconciled source is pushed to `sprint-2-validation-execution` for review. The engine evidence above belongs to the earlier service-task version; the reconciled call-activity version still needs deployment and integrated engine testing. Full Card 36 service-and-form acceptance remains pending these integrations.
