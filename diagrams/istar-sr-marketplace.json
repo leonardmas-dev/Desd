@@ -203,8 +203,8 @@
   "orphans": [],
   "dependencies": [
     {
-      "id": "fbfb6b02-923e-485b-86ad-5ab1d95fd2c4",
-      "text": "Product Successfully Listed",
+      "id": "4f91b182-00c2-4520-b033-874de69cb341",
+      "text": "SD-01\nProduct Successfully Listed",
       "type": "istar.Goal",
       "x": 300,
       "y": 180,
@@ -215,8 +215,8 @@
       "target": "31546491-5883-4378-9834-5a891da94408"
     },
     {
-      "id": "c4301fe0-7ea6-430f-802b-56c52e154948",
-      "text": "Complete Product Submission Data",
+      "id": "7fe1c94a-b9da-46bb-970b-f8e336280f25",
+      "text": "SD-02\nComplete Product Submission Data",
       "type": "istar.Resource",
       "x": 300,
       "y": 680,
@@ -227,8 +227,8 @@
       "target": "d50fd5e2-8542-47c9-a24a-5c7bcb3a97da"
     },
     {
-      "id": "543c4a23-6b62-407a-833a-6fe943ea60e0",
-      "text": "Organic Claim Checked",
+      "id": "961d1a7a-186d-4ff4-8e20-e1c0418fe05a",
+      "text": "SD-06\nOrganic Claim Checked",
       "type": "istar.Task",
       "x": 300,
       "y": 1180,
@@ -239,8 +239,8 @@
       "target": "2b7bac47-336c-4060-a37d-7f5b352403df"
     },
     {
-      "id": "21ac6907-634d-40e8-9df3-8071a6f86379",
-      "text": "Updated Quantity And Seasonal Dates",
+      "id": "2f979215-9dfb-4df9-9e24-5fda7723624c",
+      "text": "SD-12\nUpdated Quantity And Seasonal Dates",
       "type": "istar.Resource",
       "x": 300,
       "y": 1000,
@@ -251,8 +251,8 @@
       "target": "d50fd5e2-8542-47c9-a24a-5c7bcb3a97da"
     },
     {
-      "id": "43881890-ffb0-444d-b63e-354956f726b8",
-      "text": "Current Product Availability",
+      "id": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
+      "text": "SD-17\nCurrent Product Availability",
       "type": "istar.Goal",
       "x": 2440,
       "y": 820,
@@ -391,71 +391,139 @@
     {
       "id": "61a1bfa7-b3ae-4d2f-8dd5-60990e3229a2",
       "type": "istar.DependencyLink",
-      "source": "543c4a23-6b62-407a-833a-6fe943ea60e0",
-      "target": "2b7bac47-336c-4060-a37d-7f5b352403df"
+      "source": "d40d2158-8ba1-4c31-9d17-9d70aae9c29e",
+      "target": "G_Availability"
     },
     {
-      "id": "3a6838b5-1d96-49dc-8ca4-ed019bba9d20",
-      "type": "istar.DependencyLink",
-      "source": "f5f26031-a69d-4db0-bd9e-04ebcb4b920c",
-      "target": "21ac6907-634d-40e8-9df3-8071a6f86379"
+      "id": "81f156d1-7089-4c31-b83a-be355feed50c",
+      "type": "istar.ContributionLink",
+      "source": "T_Verify",
+      "target": "b9e72f3c-c002-49b1-872d-64dffafe41f9",
+      "label": "make"
     },
     {
-      "id": "e60688b5-c5c4-4f8f-81b5-6683319eca90",
-      "type": "istar.DependencyLink",
-      "source": "21ac6907-634d-40e8-9df3-8071a6f86379",
-      "target": "d50fd5e2-8542-47c9-a24a-5c7bcb3a97da"
+      "id": "abe781b3-3e5c-4275-8cc3-ab32910f858f",
+      "type": "istar.ContributionLink",
+      "source": "T_Publish",
+      "target": "b9e72f3c-c002-49b1-872d-64dffafe41f9",
+      "label": "make"
     },
     {
-      "id": "e92f6779-a747-4954-b2e2-ad586eec9d2a",
-      "type": "istar.DependencyLink",
-      "source": "294cc16a-b59a-43b8-b59c-afd6f294b1a8",
-      "target": "43881890-ffb0-444d-b63e-354956f726b8"
+      "id": "c1aad84c-1039-461a-835a-e75ce2c46c0a",
+      "type": "istar.ContributionLink",
+      "source": "T_Check",
+      "target": "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e",
+      "label": "make"
     },
     {
-      "id": "958aebc7-2b74-4dee-b4e4-102b720434bb",
-      "type": "istar.DependencyLink",
-      "source": "43881890-ffb0-444d-b63e-354956f726b8",
-      "target": "254a4d24-16c5-4fdd-b724-feb5960237ed"
+      "id": "a1228cbe-fab4-45ca-9428-80ac5b227a62",
+      "type": "istar.ContributionLink",
+      "source": "T_Verify",
+      "target": "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e",
+      "label": "help"
     }
   ],
   "display": {
-    "31546491-5883-4378-9834-5a891da94408": null,
-    "e7ffe52a-d4c4-4742-9fc5-495b5286f51d": null,
-    "6ef20bd9-8885-4a8e-add0-f75b9bd077f6": null,
-    "259b0c2e-73dc-4e3c-a5fd-6623b646f4c6": null,
-    "254a4d24-16c5-4fdd-b724-feb5960237ed": null,
-    "0dafd6f5-0bce-4483-8e8f-ab50528f6d8b": null,
-    "8fa700d8-596a-4dc4-9581-dd626caeb469": null,
-    "ede35c0e-7276-4705-ae0b-d57bc54efe1a": null,
-    "529ff7fb-ad14-4425-a58b-bbadff952926": null,
-    "f5f26031-a69d-4db0-bd9e-04ebcb4b920c": null,
-    "99b2a96b-e8dd-4a65-a1c2-b7c16d551b64": null,
-    "f33d0878-fc54-45c5-a99f-5e5fb192682b": null,
-    "b9e72f3c-c002-49b1-872d-64dffafe41f9": null,
-    "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e": null,
-    "d50fd5e2-8542-47c9-a24a-5c7bcb3a97da": null,
-    "2b7bac47-336c-4060-a37d-7f5b352403df": null,
-    "294cc16a-b59a-43b8-b59c-afd6f294b1a8": null,
-    "fbfb6b02-923e-485b-86ad-5ab1d95fd2c4": null,
-    "c4301fe0-7ea6-430f-802b-56c52e154948": null,
-    "543c4a23-6b62-407a-833a-6fe943ea60e0": null,
-    "21ac6907-634d-40e8-9df3-8071a6f86379": null,
-    "43881890-ffb0-444d-b63e-354956f726b8": null
+    "G_Main": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Manage": {
+      "width": 210,
+      "height": 80
+    },
+    "G_Details": {
+      "width": 210,
+      "height": 80
+    },
+    "G_Cert": {
+      "width": 210,
+      "height": 80
+    },
+    "G_Availability": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Publish": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Check": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Verify": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Inventory": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Apply": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Zero": {
+      "width": 210,
+      "height": 80
+    },
+    "T_Reopen": {
+      "width": 210,
+      "height": 80
+    },
+    "a2caa69e-a348-4442-98ef-2a6f3f0973ae": {
+      "collapsed": true
+    },
+    "b564cede-fa08-46df-8604-916fe1798f8d": {
+      "collapsed": true
+    },
+    "747a5c4f-5f52-49ca-b4c7-67bdee765bc4": {
+      "collapsed": true
+    },
+    "4f91b182-00c2-4520-b033-874de69cb341": {
+      "width": 180,
+      "height": 75
+    },
+    "7fe1c94a-b9da-46bb-970b-f8e336280f25": {
+      "width": 180,
+      "height": 75
+    },
+    "961d1a7a-186d-4ff4-8e20-e1c0418fe05a": {
+      "width": 180,
+      "height": 75
+    },
+    "2f979215-9dfb-4df9-9e24-5fda7723624c": {
+      "width": 180,
+      "height": 75
+    },
+    "d40d2158-8ba1-4c31-9d17-9d70aae9c29e": {
+      "width": 180,
+      "height": 75
+    },
+    "b9e72f3c-c002-49b1-872d-64dffafe41f9": {
+      "width": 210,
+      "height": 80
+    },
+    "d265d8c7-4f84-4ce0-9be7-3fbc9cad896e": {
+      "width": 210,
+      "height": 80
+    }
   },
   "tool": "pistar.2.1.0",
   "istar": "2.0",
-  "saveDate": "Wed, 11 Nov 2026 00:00:00 GMT",
+  "saveDate": "Tue, 17 Nov 2026 00:00:00 GMT",
   "diagram": {
     "width": 2900,
     "height": 1650,
     "name": "Use Case 1 Marketplace SR goals and tasks",
     "customProperties": {
-      "Scope": "Use Case 1: Producer Product Listing and Inventory Management.",
+      "Scope": "Use Case 1: Producer Product Listing and Inventory Management. Ahmed Card 17 goals, tasks and SD traceability; Taha Card 19 softgoals and contributions.",
+      "Notation": "Classic lecture subset. AndRefinementLink renders a short bar at the parent TASK (required decomposition). OrRefinementLink renders a task-to-goal means-end arrow. Contribution links are labelled arrows towards softgoals. These links do not specify process order.",
       "Purpose": "Show how marketplace tasks contribute to product quality, customer trust and reliable publication decisions.",
-      "Author contribution": "Taha added the Customer trust and Data quality softgoals and linked the relevant validation, certification and publication tasks to them.",
+      "Author contribution": "Ahmed: Marketplace goals, tasks, decomposition, means-end links and numbered SD dependencies. Taha: Customer trust and Data quality softgoals and four contribution links.",
       "Legend": "Goal = required result; Task = action; Resource = information or output; Quality = softgoal; make = strong positive contribution; help = supporting positive contribution.",
-      "Notation": "Classic lecture subset. AndRefinementLink represents task decomposition. OrRefinementLink represents a means-end relationship. Contribution links connect tasks to quality softgoals."
+      "Contribution assumptions": "The make/help strengths are the team's qualitative judgements to validate with stakeholders; they are not measured guarantees of customer trust or data quality. Customer trust concerns confidence in accurate listings and checked organic claims; Data quality concerns completeness and accuracy of product information."
     }
   }
 }

@@ -1,0 +1,209 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.10.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "1921008"
+  },
+  "schemaVersion": 19,
+  "id": "CorrectProductDetails",
+  "components": [
+    {
+      "text": "# Please Resubmit Product Details Form\n\n## Error: {{validationMessage}}\n\n",
+      "type": "text",
+      "layout": {
+        "row": "Row_09auhho",
+        "columns": null
+      },
+      "id": "Field_0jvhor9"
+    },
+    {
+      "label": "Product ID",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_1gmani7",
+        "columns": null
+      },
+      "id": "Field_1feybbi",
+      "key": "productId",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Product Name",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_1gmani7",
+        "columns": null
+      },
+      "id": "Field_0zs8fwr",
+      "key": "productName",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Category",
+      "values": [
+        {
+          "label": "Vegetable",
+          "value": "value"
+        },
+        {
+          "label": "Fruit",
+          "value": "value2"
+        },
+        {
+          "label": "Meat",
+          "value": "value3"
+        },
+        {
+          "label": "Dairy",
+          "value": "value4"
+        },
+        {
+          "label": "Bakery",
+          "value": "value5"
+        },
+        {
+          "label": "Other",
+          "value": "value6"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_06y1nfi",
+        "columns": null
+      },
+      "id": "Field_05ydpsg",
+      "key": "productCategory",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Price",
+      "type": "number",
+      "layout": {
+        "row": "Row_1y46ce3",
+        "columns": null
+      },
+      "id": "Field_0fqzjwo",
+      "key": "productPrice",
+      "validate": {
+        "required": true,
+        "min": 0
+      }
+    },
+    {
+      "label": "Quantity",
+      "type": "number",
+      "layout": {
+        "row": "Row_1y46ce3",
+        "columns": null
+      },
+      "id": "Field_1jgoq19",
+      "key": "stockQuantity",
+      "validate": {
+        "required": true,
+        "min": 0
+      }
+    },
+    {
+      "subtype": "date",
+      "dateLabel": "Available Start",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_0fjsb8l",
+        "columns": null
+      },
+      "id": "Field_0kogljt",
+      "key": "seasonalStartDate",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "subtype": "date",
+      "dateLabel": "Available End",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_0fjsb8l",
+        "columns": null
+      },
+      "id": "Field_0kdkczn",
+      "key": "seasonalEndDate",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Farm Origin",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0ja5tpy",
+        "columns": null
+      },
+      "id": "Field_03klmo7",
+      "key": "productOrigin",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Allergen Details",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0ja5tpy",
+        "columns": null
+      },
+      "id": "Field_11995a1",
+      "key": "productAllergen",
+      "validate": {
+        "required": false
+      }
+    },
+    {
+      "text": "# Is this product organic certified?",
+      "type": "text",
+      "layout": {
+        "row": "Row_025yj56",
+        "columns": null
+      },
+      "id": "Field_1iymcq1"
+    },
+    {
+      "label": "Yes",
+      "type": "checkbox",
+      "layout": {
+        "row": "Row_099ed2b",
+        "columns": null
+      },
+      "id": "Field_19yvip4",
+      "key": "organicClaimed"
+    },
+    {
+      "label": "Certification Number",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0ce2288",
+        "columns": null
+      },
+      "id": "Field_1m11drd",
+      "key": "organicCertNum",
+      "description": "* Only fill if claiming organic statua"
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_0140ks8",
+        "columns": null
+      },
+      "id": "Field_0qz3cy7"
+    }
+  ],
+  "type": "default"
+}

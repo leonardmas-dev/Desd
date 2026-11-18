@@ -1,0 +1,76 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.10.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "1921008"
+  },
+  "schemaVersion": 19,
+  "id": "InvestigateInventoryError",
+  "components": [
+    {
+      "text": "# An Inventory Error Occured",
+      "type": "text",
+      "layout": {
+        "row": "Row_03am2mw",
+        "columns": null
+      },
+      "id": "Field_12l8hkb"
+    },
+    {
+      "label": "Product ID",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0izwtbi",
+        "columns": null
+      },
+      "id": "Field_1fvybaa",
+      "key": "productId",
+      "disabled": true
+    },
+    {
+      "label": "Resolved? ",
+      "values": [
+        {
+          "label": "Resolved",
+          "value": "resolved"
+        },
+        {
+          "label": "Escalated",
+          "value": "escalated"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_12h1aoh",
+        "columns": null
+      },
+      "id": "Field_02mg6mk",
+      "key": "resolution",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Admin Notes",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0tr6mpi",
+        "columns": null
+      },
+      "id": "Field_1huwnff",
+      "key": "adminNotes"
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_03a3s4p",
+        "columns": null
+      },
+      "id": "Field_0a2qkh2"
+    }
+  ],
+  "type": "default"
+}

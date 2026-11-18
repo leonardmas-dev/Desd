@@ -1,16 +1,21 @@
 <?xml version='1.0' encoding='utf-8'?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_UC1_Validation" targetNamespace="https://brfn.example/uc1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.10.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_UC1_Validation" targetNamespace="https://brfn.example/uc1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
   <bpmn:message id="Msg_Submitted" name="brfn.product.submitted" />
-  <bpmn:message id="Msg_Correction" name="brfn.product.correction-requested" />
+  <bpmn:message id="Msg_Correction" name="brfn.product.correction-requested">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="= submissionId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
   <bpmn:message id="Msg_Corrected" name="brfn.product.corrected">
     <bpmn:extensionElements>
       <zeebe:subscription correlationKey="= submissionId" />
     </bpmn:extensionElements>
   </bpmn:message>
-  <bpmn:message id="Msg_Published" name="brfn.product.published" />
-  <bpmn:message id="Msg_CertificationCheck" name="brfn.certification.check" />
-  <bpmn:message id="Msg_CertificationResult" name="brfn.certification.result" />
-  <bpmn:error id="Error_ServiceUnavailable" name="Certification service unavailable" errorCode="CERTIFICATION_SERVICE_UNAVAILABLE" />
+  <bpmn:message id="Msg_Published" name="brfn.product.published">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="= submissionId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
   <bpmn:collaboration id="Collaboration_ProductValidation">
     <bpmn:participant id="Pool_Producer" name="Registered Producer" processRef="Process_ProducerSubmission" />
     <bpmn:participant id="Pool_Marketplace" name="Marketplace System" processRef="Process_ProductValidation" />
@@ -19,8 +24,13 @@
     <bpmn:messageFlow id="M_Correct" sourceRef="Task_SendCorrections" targetRef="Catch_CorrectedDetails" name="Corrected product data" />
     <bpmn:messageFlow id="M_Feedback" sourceRef="Task_RequestCorrection" targetRef="Catch_Correction" name="Validation feedback" />
     <bpmn:messageFlow id="M_Published" sourceRef="Task_NotifyPublished" targetRef="Catch_Published" name="Publication confirmed" />
-    <bpmn:messageFlow id="M_CertificationCheck" sourceRef="Task_VerifyCertification" targetRef="Task_ExternalCertificationCheck" name="Organic certification check" />
-    <bpmn:messageFlow id="M_CertificationResult" sourceRef="Task_ExternalCertificationResult" targetRef="Task_VerifyCertification" name="Certification verification result" />
+    <bpmn:textAnnotation id="Note_CertificationHandoff">
+      <bpmn:text>Claimed organic certification must be valid before publication.
+Invalid: request correction and revalidate.
+Unavailable / timeout: bounded retries, then manual review.
+Review approval retries verification; it does not publish.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Certification" sourceRef="Task_VerifyCertification" targetRef="Note_CertificationHandoff" associationDirection="None" />
   </bpmn:collaboration>
   <bpmn:process id="Process_ProducerSubmission" name="Producer submission and corrections" isExecutable="false">
     <bpmn:startEvent id="Start_Producer" name="List a product">
@@ -77,7 +87,7 @@
     <bpmn:sequenceFlow id="P10" sourceRef="Task_SendCorrections" targetRef="Gateway_ProducerMerge" />
   </bpmn:process>
   <bpmn:process id="Process_ProductValidation" name="Use Case 1 - Product validation and certification" isExecutable="true">
-    <bpmn:documentation>Ahmed Cards 21 and 22. Registered producer submits required product fields. Validate required fields and their types, including Boolean organicClaimed. If invalid, return clear feedback and wait for corrected data. Check certification only when claimed. The certification service task completes only after successful verification. Invalid certification and unavailable verification must not complete the task or permit publication. Taha Card 23 supplies the detailed external call, result and exception paths. Default Zeebe job retries are three; an exhausted failed job raises an incident as taught in Week 8. Workers and deployment are pending. Inventory updates are a separate operational process. No administrator review, cancellation option or new retry schedule is introduced here.</bpmn:documentation>
+    <bpmn:documentation>Use Case 1 product validation and certification. Marketplace System is executable; the producer pool remains descriptive. Validate mandatory product fields and Boolean organicClaimed before routing. A claimed organic certificate must return valid before publication. Invalid certification requests producer correction and revalidation. The certification call activity invokes Process_ExternalCertification; its worker performs the external or simulated verification. SERVICE_UNAVAILABLE business errors, unavailable results and interrupting timeouts use the bounded retry route. After three failed attempts manual review is required. Approval authorizes another verification attempt; it never bypasses verification. Rejection requests correction. The three-attempt limit follows the team functionality specification; timeout and exponential retry base delay are configurable demonstration settings rather than additional case-study business rules. Taha Card 23 supplies the call and external interaction; Ahmed Cards 29 and 36 supply executable conditions and exception routing. Thierno Card 33 supplies workers; Leonard Card 32 supplies the review form.</bpmn:documentation>
     <bpmn:startEvent id="Start_ProductSubmitted" name="Product submitted">
       <bpmn:messageEventDefinition messageRef="Msg_Submitted" />
       <bpmn:outgoing>F1</bpmn:outgoing>
@@ -91,6 +101,12 @@
       <bpmn:documentation>Validate product name, description, category, price, quantity, availability period and farm origin. Handle harvest, allergens, organic certificate and best-before information where relevant. Return validationPassed as a Boolean and clear validationErrors. Check that organicClaimed is Boolean before reporting validation success. Exact field limits must come from agreed requirements.</bpmn:documentation>
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="validate-product-details" />
+        <zeebe:ioMapping>
+          <zeebe:output source="= validationPassed" target="validationPassed" />
+          <zeebe:output source="= validationErrors" target="validationErrors" />
+          <zeebe:output source="= organicClaimed" target="organicClaimed" />
+          <zeebe:output source="= 0" target="certificationFailures" />
+        </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>F2</bpmn:incoming>
       <bpmn:outgoing>F3</bpmn:outgoing>
@@ -105,24 +121,22 @@
       <bpmn:outgoing>F_Organic</bpmn:outgoing>
       <bpmn:outgoing>F_NotOrganic</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:callActivity id="Task_VerifyCertification" name="Call organic certification verification service" calledElement="Process_ExternalCertification">
-      <bpmn:documentation>Call the external verifier only when an organic claim is present. The call must return a valid certification result before publication can continue. Invalid certification follows the rejection path; service unavailability follows the unavailable-service path.</bpmn:documentation>
-      <bpmn:incoming>F_Organic</bpmn:incoming>
+    <bpmn:callActivity id="Task_VerifyCertification" name="Verify organic certification">
+      <bpmn:documentation>Call the deployed Process_ExternalCertification process in certification-verification.bpmn. It starts at a none start event and uses a verify-organic-cert job worker to contact the external or simulated service. Return only certificationResult: valid, invalid or unavailable. Clear the previous result at the start of each attempt. SERVICE_UNAVAILABLE errors thrown by the child worker propagate to the attached interrupting error boundary. The attached interrupting timer cancels the call and its child instance on timeout. Both boundaries retain the existing bounded retry and manual review routes. Deploy the child process before starting this parent process; latest binding allows the two resources to be deployed separately.</bpmn:documentation>
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="Process_ExternalCertification" bindingType="latest" propagateAllParentVariables="true" propagateAllChildVariables="true" />
+        <zeebe:ioMapping>
+          <zeebe:input source="= null" target="certificationResult" />
+          <zeebe:output source="= certificationResult" target="certificationResult" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:outgoing>F6</bpmn:outgoing>
+      <bpmn:incoming>F_CheckCertification</bpmn:incoming>
     </bpmn:callActivity>
-    <bpmn:boundaryEvent id="Boundary_ServiceUnavailable" name="Service unavailable" attachedToRef="Task_VerifyCertification" cancelActivity="true">
-      <bpmn:errorEventDefinition errorRef="Error_ServiceUnavailable" />
-      <bpmn:outgoing>F_ServiceUnavailable</bpmn:outgoing>
-    </bpmn:boundaryEvent>
-    <bpmn:exclusiveGateway id="Gateway_CertificationValid" name="Certification valid?" default="F_CertificationInvalid">
-      <bpmn:incoming>F6</bpmn:incoming>
-      <bpmn:outgoing>F_CertificationValid</bpmn:outgoing>
-      <bpmn:outgoing>F_CertificationInvalid</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
     <bpmn:exclusiveGateway id="Gateway_PublicationJoin" name="">
       <bpmn:incoming>F_NotOrganic</bpmn:incoming>
-      <bpmn:incoming>F_CertificationValid</bpmn:incoming>
       <bpmn:outgoing>F7</bpmn:outgoing>
+      <bpmn:incoming>F_CertValid</bpmn:incoming>
     </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="Task_PublishProduct" name="Publish validated product">
       <bpmn:documentation>Publish only after successful mandatory validation and successful certification verification where claimed. Exact stock and seasonal rules are shared with the inventory process under Use Case 1.</bpmn:documentation>
@@ -166,8 +180,8 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="request-product-correction" />
       </bpmn:extensionElements>
-      <bpmn:incoming>F_Invalid</bpmn:incoming>
       <bpmn:outgoing>F4</bpmn:outgoing>
+      <bpmn:incoming>F_RequestCorrection</bpmn:incoming>
     </bpmn:sendTask>
     <bpmn:intermediateCatchEvent id="Catch_CorrectedDetails" name="Corrected details received">
       <bpmn:messageEventDefinition messageRef="Msg_Corrected" />
@@ -180,30 +194,118 @@
     <bpmn:sequenceFlow id="F_Valid" sourceRef="Gateway_DetailsValid" targetRef="Gateway_OrganicClaim" name="Yes">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= validationPassed = true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="F_Invalid" sourceRef="Gateway_DetailsValid" targetRef="Task_RequestCorrection" name="No" />
+    <bpmn:sequenceFlow id="F_Invalid" sourceRef="Gateway_DetailsValid" targetRef="Gateway_CorrectionMerge" name="No" />
     <bpmn:sequenceFlow id="F4" sourceRef="Task_RequestCorrection" targetRef="Catch_CorrectedDetails" />
     <bpmn:sequenceFlow id="F5" sourceRef="Catch_CorrectedDetails" targetRef="Gateway_ValidationMerge" />
-    <bpmn:sequenceFlow id="F_Organic" sourceRef="Gateway_OrganicClaim" targetRef="Task_VerifyCertification" name="Yes">
+    <bpmn:sequenceFlow id="F_Organic" sourceRef="Gateway_OrganicClaim" targetRef="Gateway_CertificationMerge" name="Yes">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= organicClaimed = true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="F_NotOrganic" sourceRef="Gateway_OrganicClaim" targetRef="Gateway_PublicationJoin" name="No" />
-    <bpmn:sequenceFlow id="F6" sourceRef="Task_VerifyCertification" targetRef="Gateway_CertificationValid" />
-    <bpmn:sequenceFlow id="F_CertificationValid" sourceRef="Gateway_CertificationValid" targetRef="Gateway_PublicationJoin" name="Yes">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= certificationValid = true</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="F_CertificationInvalid" sourceRef="Gateway_CertificationValid" targetRef="Task_RejectCertification" name="No" />
-    <bpmn:sequenceFlow id="F_ServiceUnavailable" sourceRef="Boundary_ServiceUnavailable" targetRef="Task_HandleServiceUnavailable" />
-    <bpmn:sequenceFlow id="F_CertificationRejected" sourceRef="Task_RejectCertification" targetRef="End_CertificationRejected" />
-    <bpmn:sequenceFlow id="F_ServiceUnavailableHandled" sourceRef="Task_HandleServiceUnavailable" targetRef="End_ServiceUnavailable" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Task_VerifyCertification" targetRef="Gateway_CertificationResult" />
     <bpmn:sequenceFlow id="F7" sourceRef="Gateway_PublicationJoin" targetRef="Task_PublishProduct" />
     <bpmn:sequenceFlow id="F8" sourceRef="Task_PublishProduct" targetRef="Task_NotifyPublished" />
     <bpmn:sequenceFlow id="F9" sourceRef="Task_NotifyPublished" targetRef="End_ProductPublished" />
-    <bpmn:textAnnotation id="Note_CertificationHandoff">
-      <bpmn:text>Card 23 handoff to Taha
-External service interaction and exception paths.
-Verification success is required before publication.</bpmn:text>
-    </bpmn:textAnnotation>
-    <bpmn:association id="Association_Certification" sourceRef="Task_VerifyCertification" targetRef="Note_CertificationHandoff" associationDirection="None" />
+    <bpmn:exclusiveGateway id="Gateway_CertificationResult" name="Certification result?" default="F_UnexpectedResult">
+      <bpmn:incoming>F6</bpmn:incoming>
+      <bpmn:outgoing>F_CertValid</bpmn:outgoing>
+      <bpmn:outgoing>F_CertInvalid</bpmn:outgoing>
+      <bpmn:outgoing>F_CertUnavailable</bpmn:outgoing>
+      <bpmn:outgoing>F_UnexpectedResult</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:boundaryEvent id="Boundary_CertificationUnavailable" name="Service unavailable" attachedToRef="Task_VerifyCertification" cancelActivity="true">
+      <bpmn:errorEventDefinition errorRef="Error_CertificationUnavailable" />
+      <bpmn:outgoing>F_ErrorRetry</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Boundary_CertificationTimeout" name="Verification timed out" attachedToRef="Task_VerifyCertification" cancelActivity="true">
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">= if certificationTimeout = null then "PT30S" else certificationTimeout</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+      <bpmn:outgoing>F_TimeoutRetry</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+    <bpmn:exclusiveGateway id="Gateway_RetryMerge" name="">
+      <bpmn:incoming>F_CertUnavailable</bpmn:incoming>
+      <bpmn:incoming>F_ErrorRetry</bpmn:incoming>
+      <bpmn:incoming>F_TimeoutRetry</bpmn:incoming>
+      <bpmn:outgoing>F_WaitRetry</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:intermediateCatchEvent id="Catch_RetryDelay" name="Wait before retry">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= certificationFailures + 1" target="certificationFailures" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">= "PT" + string((if certificationRetrySeconds = null then 1 else certificationRetrySeconds) * 2 ** certificationFailures) + "S"</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+      <bpmn:incoming>F_WaitRetry</bpmn:incoming>
+      <bpmn:outgoing>F_CheckRetries</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="Gateway_RetriesRemaining" name="Attempts remaining?" default="F_RetriesExhausted">
+      <bpmn:incoming>F_CheckRetries</bpmn:incoming>
+      <bpmn:outgoing>F_RetryCertification</bpmn:outgoing>
+      <bpmn:outgoing>F_RetriesExhausted</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_CertificationMerge" name="">
+      <bpmn:incoming>F_Organic</bpmn:incoming>
+      <bpmn:outgoing>F_CheckCertification</bpmn:outgoing>
+      <bpmn:incoming>F_RetryCertification</bpmn:incoming>
+      <bpmn:incoming>F_ReviewRetry</bpmn:incoming>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_ReviewMerge" name="">
+      <bpmn:incoming>F_UnexpectedResult</bpmn:incoming>
+      <bpmn:incoming>F_RetriesExhausted</bpmn:incoming>
+      <bpmn:outgoing>F_Review</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_ReviewCertification" name="Review unresolved verification">
+      <bpmn:documentation>Leonard Card 32 supplies the manual review form. Return Boolean reviewApproved. True authorizes a fresh verification attempt; false requests producer correction. This decision does not satisfy the certification check or permit publication by itself. Candidate group is a runtime assignment, independent of pool/lanes, per Week 9.</bpmn:documentation>
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= reviewApproved" target="reviewApproved" />
+          <zeebe:output source="= 0" target="certificationFailures" />
+        </zeebe:ioMapping>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="marketplace-reviewers" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_Review</bpmn:incoming>
+      <bpmn:outgoing>F_ReviewDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_ReviewApproved" name="Retry approved?" default="F_ReviewCorrection">
+      <bpmn:incoming>F_ReviewDecision</bpmn:incoming>
+      <bpmn:outgoing>F_ReviewRetry</bpmn:outgoing>
+      <bpmn:outgoing>F_ReviewCorrection</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_CorrectionMerge" name="">
+      <bpmn:incoming>F_Invalid</bpmn:incoming>
+      <bpmn:incoming>F_CertInvalid</bpmn:incoming>
+      <bpmn:incoming>F_ReviewCorrection</bpmn:incoming>
+      <bpmn:outgoing>F_RequestCorrection</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F_CheckCertification" sourceRef="Gateway_CertificationMerge" targetRef="Task_VerifyCertification" />
+    <bpmn:sequenceFlow id="F_CertValid" sourceRef="Gateway_CertificationResult" targetRef="Gateway_PublicationJoin" name="Valid">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= certificationResult = "valid"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_CertInvalid" sourceRef="Gateway_CertificationResult" targetRef="Gateway_CorrectionMerge" name="Invalid">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= certificationResult = "invalid"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_CertUnavailable" sourceRef="Gateway_CertificationResult" targetRef="Gateway_RetryMerge" name="Unavailable">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= certificationResult = "unavailable"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_UnexpectedResult" sourceRef="Gateway_CertificationResult" targetRef="Gateway_ReviewMerge" name="Unexpected result" />
+    <bpmn:sequenceFlow id="F_ErrorRetry" sourceRef="Boundary_CertificationUnavailable" targetRef="Gateway_RetryMerge" />
+    <bpmn:sequenceFlow id="F_TimeoutRetry" sourceRef="Boundary_CertificationTimeout" targetRef="Gateway_RetryMerge" />
+    <bpmn:sequenceFlow id="F_WaitRetry" sourceRef="Gateway_RetryMerge" targetRef="Catch_RetryDelay" />
+    <bpmn:sequenceFlow id="F_CheckRetries" sourceRef="Catch_RetryDelay" targetRef="Gateway_RetriesRemaining" />
+    <bpmn:sequenceFlow id="F_RetryCertification" sourceRef="Gateway_RetriesRemaining" targetRef="Gateway_CertificationMerge" name="Yes">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= certificationFailures &lt; 3</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_RetriesExhausted" sourceRef="Gateway_RetriesRemaining" targetRef="Gateway_ReviewMerge" name="No" />
+    <bpmn:sequenceFlow id="F_Review" sourceRef="Gateway_ReviewMerge" targetRef="Task_ReviewCertification" />
+    <bpmn:sequenceFlow id="F_ReviewDecision" sourceRef="Task_ReviewCertification" targetRef="Gateway_ReviewApproved" />
+    <bpmn:sequenceFlow id="F_ReviewRetry" sourceRef="Gateway_ReviewApproved" targetRef="Gateway_CertificationMerge" name="Yes">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= reviewApproved = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_ReviewCorrection" sourceRef="Gateway_ReviewApproved" targetRef="Gateway_CorrectionMerge" name="No" />
+    <bpmn:sequenceFlow id="F_RequestCorrection" sourceRef="Gateway_CorrectionMerge" targetRef="Task_RequestCorrection" />
   </bpmn:process>
   <bpmn:process id="Process_ExternalCertification" name="External organic certification verification" isExecutable="false">
     <bpmn:startEvent id="Start_ExternalCertification" name="Certification check received">
@@ -229,10 +331,10 @@ Verification success is required before publication.</bpmn:text>
   <bpmndi:BPMNDiagram id="Diagram_ProductValidation">
     <bpmndi:BPMNPlane id="Plane_ProductValidation" bpmnElement="Collaboration_ProductValidation">
       <bpmndi:BPMNShape id="Shape_Pool_Producer" bpmnElement="Pool_Producer" isHorizontal="true">
-        <dc:Bounds x="0" y="0" width="1760" height="350" />
+        <dc:Bounds x="0" y="0" width="2360" height="350" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Pool_Marketplace" bpmnElement="Pool_Marketplace" isHorizontal="true">
-        <dc:Bounds x="0" y="440" width="1760" height="480" />
+        <dc:Bounds x="0" y="440" width="2360" height="1000" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Pool_ExternalCertification" bpmnElement="Pool_ExternalCertification" isHorizontal="true">
         <dc:Bounds x="0" y="980" width="1760" height="220" />
@@ -249,7 +351,7 @@ Verification success is required before publication.</bpmn:text>
       <bpmndi:BPMNShape id="Shape_Task_SendSubmission" bpmnElement="Task_SendSubmission">
         <dc:Bounds x="390" y="128" width="150" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_ProducerMerge" bpmnElement="Gateway_ProducerMerge">
+      <bpmndi:BPMNShape id="Shape_Gateway_ProducerMerge" bpmnElement="Gateway_ProducerMerge" isMarkerVisible="true">
         <dc:Bounds x="600" y="143" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Gateway_WaitOutcome" bpmnElement="Gateway_WaitOutcome">
@@ -281,108 +383,6 @@ Verification success is required before publication.</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_Task_SendCorrections" bpmnElement="Task_SendCorrections">
         <dc:Bounds x="1150" y="223" width="150" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Start_ProductSubmitted" bpmnElement="Start_ProductSubmitted">
-        <dc:Bounds x="90" y="590" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="55" y="633" width="115" height="35" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_ValidationMerge" bpmnElement="Gateway_ValidationMerge">
-        <dc:Bounds x="195" y="583" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_ValidateDetails" bpmnElement="Task_ValidateDetails">
-        <dc:Bounds x="290" y="568" width="150" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_DetailsValid" bpmnElement="Gateway_DetailsValid">
-        <dc:Bounds x="500" y="583" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="470" y="540" width="110" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_OrganicClaim" bpmnElement="Gateway_OrganicClaim">
-        <dc:Bounds x="700" y="583" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="665" y="640" width="115" height="35" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_VerifyCertification" bpmnElement="Task_VerifyCertification">
-        <dc:Bounds x="850" y="568" width="150" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Boundary_ServiceUnavailable" bpmnElement="Boundary_ServiceUnavailable">
-        <dc:Bounds x="925" y="630" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="960" y="645" width="120" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_CertificationValid" bpmnElement="Gateway_CertificationValid">
-        <dc:Bounds x="1070" y="690" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1030" y="750" width="130" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Gateway_PublicationJoin" bpmnElement="Gateway_PublicationJoin">
-        <dc:Bounds x="1070" y="583" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_PublishProduct" bpmnElement="Task_PublishProduct">
-        <dc:Bounds x="1180" y="568" width="150" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_NotifyPublished" bpmnElement="Task_NotifyPublished">
-        <dc:Bounds x="1390" y="568" width="150" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_End_ProductPublished" bpmnElement="End_ProductPublished">
-        <dc:Bounds x="1620" y="590" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1585" y="633" width="115" height="35" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_RequestCorrection" bpmnElement="Task_RequestCorrection">
-        <dc:Bounds x="450" y="788" width="150" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_RejectCertification" bpmnElement="Task_RejectCertification">
-        <dc:Bounds x="1180" y="690" width="170" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_End_CertificationRejected" bpmnElement="End_CertificationRejected">
-        <dc:Bounds x="1400" y="712" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1365" y="755" width="110" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_HandleServiceUnavailable" bpmnElement="Task_HandleServiceUnavailable">
-        <dc:Bounds x="760" y="700" width="190" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_End_ServiceUnavailable" bpmnElement="End_ServiceUnavailable">
-        <dc:Bounds x="1000" y="722" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="965" y="765" width="110" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Catch_CorrectedDetails" bpmnElement="Catch_CorrectedDetails">
-        <dc:Bounds x="290" y="810" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="255" y="853" width="115" height="35" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Note_CertificationHandoff" bpmnElement="Note_CertificationHandoff">
-        <dc:Bounds x="1400" y="820" width="350" height="90" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Start_ExternalCertification" bpmnElement="Start_ExternalCertification">
-        <dc:Bounds x="620" y="1070" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="570" y="1112" width="140" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_ExternalCertificationCheck" bpmnElement="Task_ExternalCertificationCheck">
-        <dc:Bounds x="760" y="1048" width="190" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_Task_ExternalCertificationResult" bpmnElement="Task_ExternalCertificationResult">
-        <dc:Bounds x="1050" y="1048" width="190" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Shape_End_ExternalCertification" bpmnElement="End_ExternalCertification">
-        <dc:Bounds x="1340" y="1070" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1300" y="1112" width="120" height="25" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Edge_P1" bpmnElement="P1">
         <di:waypoint x="126" y="168" />
@@ -428,106 +428,6 @@ Verification success is required before publication.</bpmn:text>
         <di:waypoint x="625" y="330" />
         <di:waypoint x="625" y="193" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F1" bpmnElement="F1">
-        <di:waypoint x="126" y="608" />
-        <di:waypoint x="195" y="608" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F2" bpmnElement="F2">
-        <di:waypoint x="245" y="608" />
-        <di:waypoint x="290" y="608" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F3" bpmnElement="F3">
-        <di:waypoint x="440" y="608" />
-        <di:waypoint x="500" y="608" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_Valid" bpmnElement="F_Valid">
-        <di:waypoint x="550" y="608" />
-        <di:waypoint x="700" y="608" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="595" y="580" width="50" height="20" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_Invalid" bpmnElement="F_Invalid">
-        <di:waypoint x="525" y="633" />
-        <di:waypoint x="525" y="788" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="540" y="700" width="50" height="20" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F4" bpmnElement="F4">
-        <di:waypoint x="450" y="828" />
-        <di:waypoint x="326" y="828" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F5" bpmnElement="F5">
-        <di:waypoint x="290" y="828" />
-        <di:waypoint x="220" y="828" />
-        <di:waypoint x="220" y="633" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_Organic" bpmnElement="F_Organic">
-        <di:waypoint x="750" y="608" />
-        <di:waypoint x="850" y="608" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="775" y="580" width="50" height="20" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_NotOrganic" bpmnElement="F_NotOrganic">
-        <di:waypoint x="725" y="583" />
-        <di:waypoint x="725" y="505" />
-        <di:waypoint x="1095" y="505" />
-        <di:waypoint x="1095" y="583" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="900" y="475" width="50" height="20" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F6" bpmnElement="F6">
-        <di:waypoint x="1000" y="608" />
-        <di:waypoint x="1040" y="608" />
-        <di:waypoint x="1040" y="715" />
-        <di:waypoint x="1070" y="715" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_CertificationValid" bpmnElement="F_CertificationValid">
-        <di:waypoint x="1095" y="690" />
-        <di:waypoint x="1095" y="660" />
-        <di:waypoint x="1145" y="660" />
-        <di:waypoint x="1145" y="608" />
-        <di:waypoint x="1120" y="608" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1110" y="665" width="50" height="20" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_CertificationInvalid" bpmnElement="F_CertificationInvalid">
-        <di:waypoint x="1120" y="715" />
-        <di:waypoint x="1180" y="715" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1140" y="690" width="50" height="20" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_ServiceUnavailable" bpmnElement="F_ServiceUnavailable">
-        <di:waypoint x="943" y="666" />
-        <di:waypoint x="943" y="680" />
-        <di:waypoint x="855" y="680" />
-        <di:waypoint x="855" y="700" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_CertificationRejected" bpmnElement="F_CertificationRejected">
-        <di:waypoint x="1350" y="730" />
-        <di:waypoint x="1400" y="730" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F_ServiceUnavailableHandled" bpmnElement="F_ServiceUnavailableHandled">
-        <di:waypoint x="950" y="740" />
-        <di:waypoint x="1000" y="740" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F7" bpmnElement="F7">
-        <di:waypoint x="1120" y="608" />
-        <di:waypoint x="1180" y="608" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F8" bpmnElement="F8">
-        <di:waypoint x="1330" y="608" />
-        <di:waypoint x="1390" y="608" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_F9" bpmnElement="F9">
-        <di:waypoint x="1540" y="608" />
-        <di:waypoint x="1620" y="608" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_M_Submit" bpmnElement="M_Submit">
         <di:waypoint x="465" y="208" />
         <di:waypoint x="465" y="395" />
@@ -538,70 +438,314 @@ Verification success is required before publication.</bpmn:text>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_M_Correct" bpmnElement="M_Correct">
-        <di:waypoint x="1225" y="223" />
-        <di:waypoint x="1225" y="55" />
-        <di:waypoint x="60" y="55" />
-        <di:waypoint x="60" y="745" />
-        <di:waypoint x="308" y="745" />
-        <di:waypoint x="308" y="810" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="80" y="715" width="150" height="25" />
-        </bpmndi:BPMNLabel>
+        <di:waypoint x="1225" y="303" />
+        <di:waypoint x="1225" y="390" />
+        <di:waypoint x="155" y="390" />
+        <di:waypoint x="155" y="1160" />
+        <di:waypoint x="202" y="1160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_M_Feedback" bpmnElement="M_Feedback">
-        <di:waypoint x="600" y="828" />
-        <di:waypoint x="650" y="828" />
-        <di:waypoint x="650" y="370" />
-        <di:waypoint x="828" y="370" />
+        <di:waypoint x="395" y="1120" />
+        <di:waypoint x="395" y="1030" />
+        <di:waypoint x="70" y="1030" />
+        <di:waypoint x="70" y="410" />
+        <di:waypoint x="828" y="410" />
         <di:waypoint x="828" y="281" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="670" y="370" width="140" height="25" />
+          <dc:Bounds x="80" y="710" width="130" height="35" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_M_Published" bpmnElement="M_Published">
-        <di:waypoint x="1465" y="568" />
-        <di:waypoint x="1465" y="160" />
-        <di:waypoint x="1040" y="160" />
-        <di:waypoint x="1040" y="108" />
-        <di:waypoint x="976" y="108" />
+        <di:waypoint x="2045" y="568" />
+        <di:waypoint x="2045" y="370" />
+        <di:waypoint x="958" y="370" />
+        <di:waypoint x="958" y="126" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1490" y="390" width="140" height="25" />
+          <dc:Bounds x="1475" y="335" width="160" height="30" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_Start_ProductSubmitted" bpmnElement="Start_ProductSubmitted">
+        <dc:Bounds x="90" y="590" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="55" y="634" width="106" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_ValidationMerge" bpmnElement="Gateway_ValidationMerge" isMarkerVisible="true">
+        <dc:Bounds x="190" y="583" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ValidateDetails" bpmnElement="Task_ValidateDetails">
+        <dc:Bounds x="280" y="568" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_DetailsValid" bpmnElement="Gateway_DetailsValid" isMarkerVisible="true">
+        <dc:Bounds x="490" y="583" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="455" y="641" width="120" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_OrganicClaim" bpmnElement="Gateway_OrganicClaim" isMarkerVisible="true">
+        <dc:Bounds x="630" y="583" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="595" y="641" width="120" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_CertificationMerge" bpmnElement="Gateway_CertificationMerge" isMarkerVisible="true">
+        <dc:Bounds x="765" y="583" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_VerifyCertification" bpmnElement="Task_VerifyCertification">
+        <dc:Bounds x="875" y="568" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_CertificationResult" bpmnElement="Gateway_CertificationResult" isMarkerVisible="true">
+        <dc:Bounds x="1135" y="583" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1100" y="641" width="120" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_PublicationJoin" bpmnElement="Gateway_PublicationJoin" isMarkerVisible="true">
+        <dc:Bounds x="1630" y="583" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_PublishProduct" bpmnElement="Task_PublishProduct">
+        <dc:Bounds x="1750" y="568" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_NotifyPublished" bpmnElement="Task_NotifyPublished">
+        <dc:Bounds x="1970" y="568" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_ProductPublished" bpmnElement="End_ProductPublished">
+        <dc:Bounds x="2210" y="590" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2175" y="634" width="106" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Boundary_CertificationUnavailable" bpmnElement="Boundary_CertificationUnavailable">
+        <dc:Bounds x="895" y="630" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="785" y="665" width="105" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Boundary_CertificationTimeout" bpmnElement="Boundary_CertificationTimeout">
+        <dc:Bounds x="985" y="630" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1010" y="650" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_RetryMerge" bpmnElement="Gateway_RetryMerge" isMarkerVisible="true">
+        <dc:Bounds x="1110" y="760" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Catch_RetryDelay" bpmnElement="Catch_RetryDelay">
+        <dc:Bounds x="1227" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1192" y="811" width="106" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_RetriesRemaining" bpmnElement="Gateway_RetriesRemaining" isMarkerVisible="true">
+        <dc:Bounds x="1340" y="760" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1305" y="818" width="120" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_ReviewMerge" bpmnElement="Gateway_ReviewMerge" isMarkerVisible="true">
+        <dc:Bounds x="1480" y="895" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_ReviewCertification" bpmnElement="Task_ReviewCertification">
+        <dc:Bounds x="1600" y="880" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_ReviewApproved" bpmnElement="Gateway_ReviewApproved" isMarkerVisible="true">
+        <dc:Bounds x="1845" y="895" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1810" y="953" width="120" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_CorrectionMerge" bpmnElement="Gateway_CorrectionMerge" isMarkerVisible="true">
+        <dc:Bounds x="490" y="1135" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_RequestCorrection" bpmnElement="Task_RequestCorrection">
+        <dc:Bounds x="320" y="1120" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Catch_CorrectedDetails" bpmnElement="Catch_CorrectedDetails">
+        <dc:Bounds x="202" y="1142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="167" y="1186" width="106" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Note_CertificationHandoff" bpmnElement="Note_CertificationHandoff">
+        <dc:Bounds x="1540" y="1250" width="660" height="95" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_F1" bpmnElement="F1">
+        <di:waypoint x="126" y="608.0" />
+        <di:waypoint x="190" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F2" bpmnElement="F2">
+        <di:waypoint x="240" y="608.0" />
+        <di:waypoint x="280" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F3" bpmnElement="F3">
+        <di:waypoint x="430" y="608.0" />
+        <di:waypoint x="490" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_Valid" bpmnElement="F_Valid">
+        <di:waypoint x="540" y="608.0" />
+        <di:waypoint x="630" y="608.0" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="565" y="585.0" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_Invalid" bpmnElement="F_Invalid">
+        <di:waypoint x="515" y="633" />
+        <di:waypoint x="515" y="1135" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="1112" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F4" bpmnElement="F4">
+        <di:waypoint x="320" y="1160" />
+        <di:waypoint x="238" y="1160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F5" bpmnElement="F5">
+        <di:waypoint x="220" y="1142" />
+        <di:waypoint x="220" y="633" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_Organic" bpmnElement="F_Organic">
+        <di:waypoint x="680" y="608.0" />
+        <di:waypoint x="765" y="608.0" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="700" y="585.0" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_NotOrganic" bpmnElement="F_NotOrganic">
+        <di:waypoint x="655" y="583" />
+        <di:waypoint x="655" y="500" />
+        <di:waypoint x="1655" y="500" />
+        <di:waypoint x="1655" y="583" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1590" y="477" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F6" bpmnElement="F6">
+        <di:waypoint x="1045" y="608.0" />
+        <di:waypoint x="1135" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F7" bpmnElement="F7">
+        <di:waypoint x="1680" y="608.0" />
+        <di:waypoint x="1750" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F8" bpmnElement="F8">
+        <di:waypoint x="1900" y="608.0" />
+        <di:waypoint x="1970" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F9" bpmnElement="F9">
+        <di:waypoint x="2120" y="608.0" />
+        <di:waypoint x="2210" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CheckCertification" bpmnElement="F_CheckCertification">
+        <di:waypoint x="815" y="608.0" />
+        <di:waypoint x="875" y="608.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CertValid" bpmnElement="F_CertValid">
+        <di:waypoint x="1185" y="608.0" />
+        <di:waypoint x="1630" y="608.0" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1565" y="585.0" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CertInvalid" bpmnElement="F_CertInvalid">
+        <di:waypoint x="1147.5" y="620.5" />
+        <di:waypoint x="1080" y="688" />
+        <di:waypoint x="1080" y="1160" />
+        <di:waypoint x="540" y="1160" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="980" y="1115" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CertUnavailable" bpmnElement="F_CertUnavailable">
+        <di:waypoint x="1160" y="633" />
+        <di:waypoint x="1160" y="700" />
+        <di:waypoint x="1135" y="700" />
+        <di:waypoint x="1135" y="760" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1165" y="670" width="110" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_UnexpectedResult" bpmnElement="F_UnexpectedResult">
+        <di:waypoint x="1160" y="583" />
+        <di:waypoint x="1160" y="540" />
+        <di:waypoint x="1505" y="540" />
+        <di:waypoint x="1505" y="895" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1515" y="840" width="125" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_ErrorRetry" bpmnElement="F_ErrorRetry">
+        <di:waypoint x="913" y="666" />
+        <di:waypoint x="913" y="785" />
+        <di:waypoint x="1110" y="785" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_TimeoutRetry" bpmnElement="F_TimeoutRetry">
+        <di:waypoint x="1003" y="666" />
+        <di:waypoint x="1003" y="850" />
+        <di:waypoint x="1135" y="850" />
+        <di:waypoint x="1135" y="810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_WaitRetry" bpmnElement="F_WaitRetry">
+        <di:waypoint x="1160" y="785.0" />
+        <di:waypoint x="1227" y="785.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CheckRetries" bpmnElement="F_CheckRetries">
+        <di:waypoint x="1263" y="785.0" />
+        <di:waypoint x="1340" y="785.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_RetryCertification" bpmnElement="F_RetryCertification">
+        <di:waypoint x="1365" y="760" />
+        <di:waypoint x="1365" y="480" />
+        <di:waypoint x="790" y="480" />
+        <di:waypoint x="790" y="583" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1245" y="705" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_RetriesExhausted" bpmnElement="F_RetriesExhausted">
+        <di:waypoint x="1365" y="810" />
+        <di:waypoint x="1365" y="920" />
+        <di:waypoint x="1480" y="920" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1300" y="897" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_Review" bpmnElement="F_Review">
+        <di:waypoint x="1530" y="920.0" />
+        <di:waypoint x="1600" y="920.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_ReviewDecision" bpmnElement="F_ReviewDecision">
+        <di:waypoint x="1770" y="920.0" />
+        <di:waypoint x="1845" y="920.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_ReviewRetry" bpmnElement="F_ReviewRetry">
+        <di:waypoint x="1895" y="920" />
+        <di:waypoint x="1950" y="920" />
+        <di:waypoint x="1950" y="1040" />
+        <di:waypoint x="790" y="1040" />
+        <di:waypoint x="790" y="633" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1900" y="940" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_ReviewCorrection" bpmnElement="F_ReviewCorrection">
+        <di:waypoint x="1870" y="945" />
+        <di:waypoint x="1870" y="1210" />
+        <di:waypoint x="515" y="1210" />
+        <di:waypoint x="515" y="1185" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1750" y="1180" width="95" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_RequestCorrection" bpmnElement="F_RequestCorrection">
+        <di:waypoint x="490" y="1160" />
+        <di:waypoint x="470" y="1160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Edge_Association_Certification" bpmnElement="Association_Certification">
-        <di:waypoint x="925" y="648" />
-        <di:waypoint x="1400" y="865" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_E1" bpmnElement="E1">
-        <di:waypoint x="656" y="1088" />
-        <di:waypoint x="760" y="1088" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_E2" bpmnElement="E2">
-        <di:waypoint x="950" y="1088" />
-        <di:waypoint x="1050" y="1088" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_E3" bpmnElement="E3">
-        <di:waypoint x="1240" y="1088" />
-        <di:waypoint x="1340" y="1088" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_M_CertificationCheck" bpmnElement="M_CertificationCheck">
-        <di:waypoint x="925" y="648" />
-        <di:waypoint x="925" y="940" />
-        <di:waypoint x="855" y="940" />
-        <di:waypoint x="855" y="1048" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="775" y="915" width="155" height="25" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Edge_M_CertificationResult" bpmnElement="M_CertificationResult">
-        <di:waypoint x="1145" y="1048" />
-        <di:waypoint x="1145" y="950" />
-        <di:waypoint x="1010" y="950" />
-        <di:waypoint x="1010" y="648" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1020" y="915" width="165" height="25" />
-        </bpmndi:BPMNLabel>
+        <di:waypoint x="960" y="648" />
+        <di:waypoint x="960" y="1300" />
+        <di:waypoint x="1540" y="1300" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
+  <bpmn:error id="Error_CertificationUnavailable" name="Certification service unavailable" errorCode="SERVICE_UNAVAILABLE" />
 </bpmn:definitions>
