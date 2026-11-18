@@ -51,13 +51,13 @@
     <bpmn:endEvent id="End_ProductStillAvailable" name="Product Still Available">
       <bpmn:incoming>F_StockRemaining</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Task_UnpublishOutOfStockProduct" name="Make products unavailable when stock reaches zero">
+    <bpmn:scriptTask id="Task_UnpublishOutOfStockProduct" name="Make products unavailable when stock reaches zero">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="unpublish-stock" retries="3" />
+        <zeebe:script expression="=false" resultVariable="available" />
       </bpmn:extensionElements>
       <bpmn:incoming>F_StockDepleted</bpmn:incoming>
       <bpmn:outgoing>F_UnpublishedToNotification</bpmn:outgoing>
-    </bpmn:serviceTask>
+    </bpmn:scriptTask>
     <bpmn:sendTask id="Task_NotifyProducerZeroStock" name="Notify Producer of Zero Stock">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="notify-producer" retries="3" />
@@ -75,25 +75,25 @@
     <bpmn:endEvent id="End_SeasonalProductArchived" name="Archived Seasonal Product">
       <bpmn:incoming>F_OutsideSeason</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Task_RepublishProduct" name="Restore Replenished Stock">
+    <bpmn:scriptTask id="Task_RepublishProduct" name="Restore Replenished Stock">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="republish-product" retries="3" />
+        <zeebe:script expression="=true" resultVariable="available" />
       </bpmn:extensionElements>
       <bpmn:incoming>F_WithinSeason</bpmn:incoming>
       <bpmn:outgoing>F_RepublishedToConfirmation</bpmn:outgoing>
-    </bpmn:serviceTask>
+    </bpmn:scriptTask>
     <bpmn:exclusiveGateway id="Gateway_SeasonalCheck" name="Product in Season?" default="F_OutsideSeason">
       <bpmn:incoming>F_CheckSeasonalAvailability</bpmn:incoming>
       <bpmn:outgoing>F_WithinSeason</bpmn:outgoing>
       <bpmn:outgoing>F_OutsideSeason</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_UpdateStockRecord" name="Update Stock Record">
+    <bpmn:scriptTask id="Task_UpdateStockRecord" name="Update Stock Record">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="update-stock" retries="3" />
+        <zeebe:script expression="=stockQuantity + restockQuantity" resultVariable="stockQuantity" />
       </bpmn:extensionElements>
       <bpmn:incoming>F_ValidRestock</bpmn:incoming>
       <bpmn:outgoing>F_CheckSeasonalAvailability</bpmn:outgoing>
-    </bpmn:serviceTask>
+    </bpmn:scriptTask>
     <bpmn:exclusiveGateway id="Gateway_RestockDetailsValid" name="Restock Quantity and Dates Valid?" default="F_InvalidRestock">
       <bpmn:incoming>F_CheckRestockValidity</bpmn:incoming>
       <bpmn:outgoing>F_ValidRestock</bpmn:outgoing>
@@ -263,8 +263,16 @@
   <bpmn:message id="Msg_ProductListed" name="brfn.inventory.product-listed" />
   <bpmn:error id="Error_StockDeductionFailed" name="INVENTORY_DEDUCTION_FAILED" errorCode="INVENTORY_DEDUCTION_FAILED" />
   <bpmn:error id="Error_StockRecordUpdateFailed" name="INVENTORY_UPDATE_FAILED" errorCode="INVENTORY_UPDATE_FAILED" />
-  <bpmn:message id="Msg_RestockCorrectionRequested" name="brfn.inventory.restock-correction-requested" />
-  <bpmn:message id="Msg_StockUpdateConfirmed" name="brfn.inventory.stock-update-confirmed" />
+  <bpmn:message id="Msg_RestockCorrectionRequested" name="brfn.inventory.restock-correction-requested">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=productId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:message id="Msg_StockUpdateConfirmed" name="brfn.inventory.stock-update-confirmed">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=productId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
   <bpmndi:BPMNDiagram id="Diagram_InventoryLifecycle">
     <bpmndi:BPMNPlane id="Plane_InventoryLifecycle" bpmnElement="Collaboration_InventoryManagement">
       <bpmndi:BPMNShape id="Participant_07m377c_di" bpmnElement="Pool_BRFNPlatform" isHorizontal="true">
