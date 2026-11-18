@@ -1,0 +1,74 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.10.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "1921008"
+  },
+  "schemaVersion": 19,
+  "id": "ManualCertificationReview",
+  "components": [
+    {
+      "text": "# Certification Review\n",
+      "type": "text",
+      "layout": {
+        "row": "Row_0dc2gol",
+        "columns": null
+      },
+      "id": "Field_16tbjss"
+    },
+    {
+      "label": "Product ID",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0sckoo5",
+        "columns": null
+      },
+      "id": "Field_134p1pv",
+      "key": "productId",
+      "disabled": true
+    },
+    {
+      "label": "Certification Number",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0sckoo5",
+        "columns": null
+      },
+      "id": "Field_11qbors",
+      "key": "organicCertNum",
+      "disabled": true
+    },
+    {
+      "label": "Approve Retry",
+      "type": "checkbox",
+      "layout": {
+        "row": "Row_1fxpz3p",
+        "columns": null
+      },
+      "id": "Field_0cjxcc6",
+      "key": "reviewApproved"
+    },
+    {
+      "label": "Notes",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_1qpa6u7",
+        "columns": null
+      },
+      "id": "Field_0xxcftr",
+      "key": "certRevNotes"
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_0mjwvht",
+        "columns": null
+      },
+      "id": "Field_1c7rc95"
+    }
+  ],
+  "type": "default"
+}
