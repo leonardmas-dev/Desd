@@ -77,6 +77,27 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(checked["validationErrors"], [])
         self.assertEqual(checked["validationMessage"], "")
 
+    def seasonal_values(self):
+        values = copy.deepcopy(self.values)
+        values["seasonalStartDate"] = values.pop("availableStart")
+        values["seasonalEndDate"] = values.pop("availableEnd")
+        return values
+
+    def test_new_team_seasonal_date_names_are_accepted(self):
+        self.assertTrue(validate_product(self.seasonal_values())["validationPassed"])
+
+    def test_conflicting_date_contracts_request_correction(self):
+        checked = validate_product({**self.values, "seasonalStartDate": "2026-02-01"})
+        self.assertFalse(checked["validationPassed"])
+        self.assertIn("must describe the same date", checked["validationMessage"])
+
+    def test_new_form_date_names_do_not_bypass_required_description(self):
+        values = self.seasonal_values()
+        values.pop("description")
+        checked = validate_product(values)
+        self.assertFalse(checked["validationPassed"])
+        self.assertIn("Description is required", checked["validationMessage"])
+
     def test_required_fields_report_specific_feedback(self):
         for key in ("productId", "productName", "description", "productCategory", "productOrigin"):
             with self.subTest(key=key):
@@ -176,6 +197,19 @@ class WorkerTests(unittest.TestCase):
     def test_nonorganic_publication_needs_no_certificate(self):
         values = {**self.values, "validationPassed": True, "organicClaimed": False}
         self.assertFalse(self.catalogue.publish(values, date(2026, 11, 19))["organicBadge"])
+
+    def test_seasonal_date_payload_publishes_with_both_date_contracts_preserved(self):
+        values = {**self.seasonal_values(), "validationPassed": True, "certificationResult": "valid"}
+        self.assertTrue(self.catalogue.publish(values, date(2026, 11, 19))["available"])
+        with closing(sqlite3.connect(self.catalogue.filename)) as db:
+            stored = json.loads(db.execute("SELECT payload FROM products").fetchone()[0])
+        self.assertEqual(stored["availableStart"], stored["seasonalStartDate"])
+        self.assertEqual(stored["availableEnd"], stored["seasonalEndDate"])
+
+    def test_publication_rejects_conflicting_dates_even_with_success_flag(self):
+        with self.assertRaises(BusinessError):
+            self.catalogue.publish({**self.values, "seasonalEndDate": "2027-01-01",
+                                    "validationPassed": True, "certificationResult": "valid"})
 
     def test_publication_outside_either_season_boundary_is_unavailable(self):
         values = {**self.values, "validationPassed": True, "certificationResult": "valid"}

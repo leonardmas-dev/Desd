@@ -19,6 +19,14 @@ Do not replace the merged caller with the older Camunda script-task snapshot. Th
 captured shared forms have been retained, with description and relevant date inputs
 added to submission/correction and their existing field names used by the worker.
 
+The team's later forms on `main` use `seasonalStartDate` / `seasonalEndDate`.
+The Validation worker also accepts these names and normalises them to
+`availableStart` / `availableEnd` for the existing publication contract. If both
+pairs are supplied, they must agree; conflicting dates request correction.
+The original team forms under `Forms 2/` are not modified by this compatibility
+change. They still need a description input to meet Case 1's mandatory data
+contract; the integrated form copies in this folder already include it.
+
 ## Deploy
 
 1. Import the three `.form` files into the shared Camunda project. Keep IDs

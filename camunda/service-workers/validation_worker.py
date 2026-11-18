@@ -26,6 +26,7 @@ PRODUCT_FIELDS = (
     "productId", "productName", "description", "productCategory", "productPrice",
     "stockQuantity", "availableStart", "availableEnd", "productOrigin",
     "productAllergen", "organicClaimed", "organicCertNum", "harvestDate", "bestBeforeDate",
+    "seasonalStartDate", "seasonalEndDate",
 )
 TEST_FIELDS = ("simulatedCertification", "certificationTimeout", "certificationRetrySeconds")
 
@@ -129,9 +130,26 @@ class CamundaClient:
         return self.post("/messages/publication", payload)
 
 
+def normalise_product_dates(values):
+    """Accept both team date contracts without silently choosing conflicting data."""
+    normalised = dict(values)
+    errors = []
+    for original, seasonal in (("availableStart", "seasonalStartDate"),
+                               ("availableEnd", "seasonalEndDate")):
+        old_value, new_value = values.get(original), values.get(seasonal)
+        old_present, new_present = old_value not in (None, ""), new_value not in (None, "")
+        if old_present and new_present and old_value != new_value:
+            errors.append(f"{original} and {seasonal} must describe the same date.")
+        chosen = old_value if old_present else new_value
+        if original in values or seasonal in values:
+            normalised[original] = chosen
+            normalised[seasonal] = chosen
+    return normalised, errors
+
+
 def validate_product(values):
     """Use the shared form keys; keep policy independent of UI field validation."""
-    errors = []
+    values, errors = normalise_product_dates(values)
     for key, label in (
         ("productId", "Product ID"), ("productName", "Product name"),
         ("description", "Description"), ("productCategory", "Category"),
@@ -191,6 +209,7 @@ class Catalogue:
             raise BusinessError("VALIDATION_REQUIRED", "Publication requires validated product data")
         if values["organicClaimed"] and values.get("certificationResult") != "valid":
             raise BusinessError("CERTIFICATION_REQUIRED", "The organic claim has not been verified")
+        values, _ = normalise_product_dates(values)
         today = today or date.today()
         available = (date.fromisoformat(values["availableStart"]) <= today
                      <= date.fromisoformat(values["availableEnd"]))
