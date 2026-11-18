@@ -234,3 +234,26 @@ This branch now includes `main` at `1ad55f8`. `models/inventory.bpmn` and every 
 ### Trello status recorded on 18 November
 
 Card 29 is Done: executable configuration, separate form/child deployment, parent activation and invocation of the child have engine evidence. Card 36 remains In review: cancellation, exhausted timeouts and the rejected review route have evidence, but the remaining connected simulated-service scenarios have not passed on the engine. Both cards have a progress comment and relevant screenshots. Completion of Card 29 does not assert completion of the remaining service integration or Inventory handoff.
+
+
+## Card 36 connected engine verification (18 November 2026)
+
+The isolated Camunda 8.9.28 engine initially rejected the raw Validation BPMN because some incoming and outgoing references and event definitions were out of schema order, and the error definition followed the diagram. These elements were reordered. A structural comparison confirmed that the element values, routes, conditions and diagram geometry are identical. The engine then deployed both BPMN resources and all three forms in deployment `2251799813685318`.
+
+The Python worker ran against the local engine through the REST API and called the repository's simulated certification service over HTTP. Test submissions used the repository CLI and synthetic product data. The checks read engine history and variables and inspected the persisted catalogue. The two review decisions were submitted through the local user task API. Tasklist rendering and assignment in the shared environment were checked separately in the earlier run.
+
+| Check | Observed result |
+| --- | --- |
+| Valid organic certificate | Child completed, product published with organic badge |
+| Non-organic submission | Published without a certification call or badge |
+| Invalid certificate | Reached correction with feedback and no publication |
+| Corrected certificate | Same submission revalidated before publication |
+| Missing product description | Requested correction without certification or publication |
+| Explicit service error and rejected review | Error boundary caught all three errors, then rejection requested correction without publication |
+| Slow verifier | Timer fired on all three attempts, cancelled all three children and opened manual review |
+| HTTP 503 outage | Three unavailable results reached review with failure count 3, without publication |
+| Approved retry after service recovery | A fourth child checked the certificate successfully before publication |
+
+All nine checks passed across seven instances with no incidents. The 37 Python regression tests passed again. The detailed [engine results](evidence/validation/2026-11-18/card-36-engine-results.json), [Operate timeout and review](evidence/validation/2026-11-18/timeout-review-operate.jpg) and [three cancelled calls](evidence/validation/2026-11-18/timeout-children-operate.png) are retained here.
+
+This completes Card 36's simulated service tests. The team still needs to reconcile the newer shared Validation model and run the separate Validation to Inventory handoff. The test used the repository's Validation worker and local Camunda, so a connected run on the shared class cluster remains unverified. The shared model, Inventory and the original team forms were preserved.

@@ -49,8 +49,8 @@ Review approval retries verification; it does not publish.</bpmn:text>
     </bpmn:sendTask>
     <bpmn:exclusiveGateway id="Gateway_ProducerMerge" name="">
       <bpmn:incoming>P3</bpmn:incoming>
-      <bpmn:outgoing>P4</bpmn:outgoing>
       <bpmn:incoming>P10</bpmn:incoming>
+      <bpmn:outgoing>P4</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:eventBasedGateway id="Gateway_WaitOutcome" name="Wait for response">
       <bpmn:incoming>P4</bpmn:incoming>
@@ -58,17 +58,17 @@ Review approval retries verification; it does not publish.</bpmn:text>
       <bpmn:outgoing>P7</bpmn:outgoing>
     </bpmn:eventBasedGateway>
     <bpmn:intermediateCatchEvent id="Catch_Published" name="Publication confirmed">
-      <bpmn:messageEventDefinition messageRef="Msg_Published" />
       <bpmn:incoming>P5</bpmn:incoming>
       <bpmn:outgoing>P6</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Msg_Published" />
     </bpmn:intermediateCatchEvent>
     <bpmn:endEvent id="End_ProducerPublished" name="Product listed">
       <bpmn:incoming>P6</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:intermediateCatchEvent id="Catch_Correction" name="Correction requested">
-      <bpmn:messageEventDefinition messageRef="Msg_Correction" />
       <bpmn:incoming>P7</bpmn:incoming>
       <bpmn:outgoing>P8</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Msg_Correction" />
     </bpmn:intermediateCatchEvent>
     <bpmn:userTask id="Task_CorrectDetails" name="Correct product details">
       <bpmn:extensionElements>
@@ -95,13 +95,13 @@ Review approval retries verification; it does not publish.</bpmn:text>
   <bpmn:process id="Process_ProductValidation" name="Use Case 1 - Product validation and certification" isExecutable="true">
     <bpmn:documentation>Use Case 1 product validation and certification. Marketplace System is executable; the producer pool remains descriptive. Validate mandatory product fields and Boolean organicClaimed before routing. A claimed organic certificate must return valid before publication. Invalid certification requests producer correction and revalidation. The certification call activity invokes Process_ExternalCertification; its worker performs the external or simulated verification. SERVICE_UNAVAILABLE business errors, unavailable results and interrupting timeouts use the bounded retry route. After three failed attempts manual review is required. Approval authorizes another verification attempt; it never bypasses verification. Rejection requests correction. The three-attempt limit follows the team functionality specification; timeout and exponential retry base delay are configurable demonstration settings rather than additional case-study business rules. Taha Card 23 supplies the call and external interaction; Ahmed Cards 29 and 36 supply executable conditions and exception routing. Thierno Card 33 supplies workers; Leonard Card 32 supplies the review form.</bpmn:documentation>
     <bpmn:startEvent id="Start_ProductSubmitted" name="Product submitted">
-      <bpmn:messageEventDefinition messageRef="Msg_Submitted" />
       <bpmn:outgoing>F1</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Msg_Submitted" />
     </bpmn:startEvent>
     <bpmn:exclusiveGateway id="Gateway_ValidationMerge" name="">
       <bpmn:incoming>F1</bpmn:incoming>
-      <bpmn:outgoing>F2</bpmn:outgoing>
       <bpmn:incoming>F5</bpmn:incoming>
+      <bpmn:outgoing>F2</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="Task_ValidateDetails" name="Validate product details">
       <bpmn:documentation>Job type validate-product-details. Consume the shared form keys productId, productName, description, productCategory, productPrice, stockQuantity, availableStart, availableEnd, productOrigin and Boolean organicClaimed. Check optional relevant harvestDate, bestBeforeDate, productAllergen and organicCertNum. Return Boolean validationPassed, validationErrors and validationMessage for the correction form. Missing or wrongly typed organicClaimed is a validation error, never an implicit non-organic claim. Canonical form keys are used directly; the worker does not expect the older category/unitPrice/startDate/postcode aliases.</bpmn:documentation>
@@ -137,13 +137,13 @@ Review approval retries verification; it does not publish.</bpmn:text>
           <zeebe:output source="= certificationResult" target="certificationResult" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
-      <bpmn:outgoing>F6</bpmn:outgoing>
       <bpmn:incoming>F_CheckCertification</bpmn:incoming>
+      <bpmn:outgoing>F6</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:exclusiveGateway id="Gateway_PublicationJoin" name="">
       <bpmn:incoming>F_NotOrganic</bpmn:incoming>
-      <bpmn:outgoing>F7</bpmn:outgoing>
       <bpmn:incoming>F_CertValid</bpmn:incoming>
+      <bpmn:outgoing>F7</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="Task_PublishProduct" name="Publish validated product">
       <bpmn:documentation>Publish only after successful mandatory validation and successful certification verification where claimed. Exact stock and seasonal rules are shared with the inventory process under Use Case 1.</bpmn:documentation>
@@ -168,13 +168,13 @@ Review approval retries verification; it does not publish.</bpmn:text>
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="request-product-correction" />
       </bpmn:extensionElements>
-      <bpmn:outgoing>F4</bpmn:outgoing>
       <bpmn:incoming>F_RequestCorrection</bpmn:incoming>
+      <bpmn:outgoing>F4</bpmn:outgoing>
     </bpmn:sendTask>
     <bpmn:intermediateCatchEvent id="Catch_CorrectedDetails" name="Corrected details received">
-      <bpmn:messageEventDefinition messageRef="Msg_Corrected" />
       <bpmn:incoming>F4</bpmn:incoming>
       <bpmn:outgoing>F5</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Msg_Corrected" />
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="F1" sourceRef="Start_ProductSubmitted" targetRef="Gateway_ValidationMerge" />
     <bpmn:sequenceFlow id="F2" sourceRef="Gateway_ValidationMerge" targetRef="Task_ValidateDetails" />
@@ -201,14 +201,14 @@ Review approval retries verification; it does not publish.</bpmn:text>
       <bpmn:outgoing>F_UnexpectedResult</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:boundaryEvent id="Boundary_CertificationUnavailable" name="Service unavailable" attachedToRef="Task_VerifyCertification" cancelActivity="true">
-      <bpmn:errorEventDefinition errorRef="Error_CertificationUnavailable" />
       <bpmn:outgoing>F_ErrorRetry</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_CertificationUnavailable" />
     </bpmn:boundaryEvent>
     <bpmn:boundaryEvent id="Boundary_CertificationTimeout" name="Verification timed out" attachedToRef="Task_VerifyCertification" cancelActivity="true">
+      <bpmn:outgoing>F_TimeoutRetry</bpmn:outgoing>
       <bpmn:timerEventDefinition>
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">= if certificationTimeout = null then "PT30S" else certificationTimeout</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
-      <bpmn:outgoing>F_TimeoutRetry</bpmn:outgoing>
     </bpmn:boundaryEvent>
     <bpmn:exclusiveGateway id="Gateway_RetryMerge" name="">
       <bpmn:incoming>F_CertUnavailable</bpmn:incoming>
@@ -222,11 +222,11 @@ Review approval retries verification; it does not publish.</bpmn:text>
           <zeebe:output source="= certificationFailures + 1" target="certificationFailures" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
+      <bpmn:incoming>F_WaitRetry</bpmn:incoming>
+      <bpmn:outgoing>F_CheckRetries</bpmn:outgoing>
       <bpmn:timerEventDefinition>
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">= "PT" + string((if certificationRetrySeconds = null then 1 else certificationRetrySeconds) * 2 ** certificationFailures) + "S"</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
-      <bpmn:incoming>F_WaitRetry</bpmn:incoming>
-      <bpmn:outgoing>F_CheckRetries</bpmn:outgoing>
     </bpmn:intermediateCatchEvent>
     <bpmn:exclusiveGateway id="Gateway_RetriesRemaining" name="Attempts remaining?" default="F_RetriesExhausted">
       <bpmn:incoming>F_CheckRetries</bpmn:incoming>
@@ -235,9 +235,9 @@ Review approval retries verification; it does not publish.</bpmn:text>
     </bpmn:exclusiveGateway>
     <bpmn:exclusiveGateway id="Gateway_CertificationMerge" name="">
       <bpmn:incoming>F_Organic</bpmn:incoming>
-      <bpmn:outgoing>F_CheckCertification</bpmn:outgoing>
       <bpmn:incoming>F_RetryCertification</bpmn:incoming>
       <bpmn:incoming>F_ReviewRetry</bpmn:incoming>
+      <bpmn:outgoing>F_CheckCertification</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:exclusiveGateway id="Gateway_ReviewMerge" name="">
       <bpmn:incoming>F_UnexpectedResult</bpmn:incoming>
@@ -296,6 +296,7 @@ Review approval retries verification; it does not publish.</bpmn:text>
     <bpmn:sequenceFlow id="F_ReviewCorrection" sourceRef="Gateway_ReviewApproved" targetRef="Gateway_CorrectionMerge" name="No" />
     <bpmn:sequenceFlow id="F_RequestCorrection" sourceRef="Gateway_CorrectionMerge" targetRef="Task_RequestCorrection" />
   </bpmn:process>
+  <bpmn:error id="Error_CertificationUnavailable" name="Certification service unavailable" errorCode="SERVICE_UNAVAILABLE" />
   <bpmndi:BPMNDiagram id="Diagram_ProductValidation">
     <bpmndi:BPMNPlane id="Plane_ProductValidation" bpmnElement="Collaboration_ProductValidation">
       <bpmndi:BPMNShape id="Shape_Pool_Producer" bpmnElement="Pool_Producer" isHorizontal="true">
@@ -712,5 +713,4 @@ Review approval retries verification; it does not publish.</bpmn:text>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-  <bpmn:error id="Error_CertificationUnavailable" name="Certification service unavailable" errorCode="SERVICE_UNAVAILABLE" />
 </bpmn:definitions>
