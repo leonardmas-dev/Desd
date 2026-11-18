@@ -1,0 +1,7 @@
+# Sprint 2 connected rehearsal
+
+Both operational processes were deployed to the same local Camunda 8.9.28 engine with the certification child and five forms. The case used synthetic data, the HTTP certification simulator and a shared SQLite catalogue for both workers. The original Inventory BPMN and team form exports were preserved. A generated demo copy uses a persistent stock update worker and the corrected restock form ID.
+
+[Machine-checkable rehearsal results](connected-rehearsal.json) record nine passing checks from a fresh launcher run. The screenshots show the preceding run of the same demo, including the two happy paths for one product. [Validation published](validation-published.jpg), [Inventory received the message and finished initialisation](inventory-initialised.jpg), [zero stock became unavailable](inventory-zero-stock.jpg) and [an in-season restock restored availability](inventory-restock-in-season.jpg). [Tasklist](manual-certification-review.jpg) shows a prepared human review on the same engine.
+
+The local results satisfy the demonstration of initial executable automation and provide evidence for the team's deployment and handoff review. The shared cluster needs its own rollout and verification. The local demo uses BPMN FEEL for the seasonal decision. The separate shared availability DMN was not part of this run. Producer and customer events are sent as synthetic messages. The certification and investigation tasks are actual Camunda user tasks. No external certification endpoint was contacted.

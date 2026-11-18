@@ -1,11 +1,27 @@
 # Validation integration and demonstration
 
-This folder supplies the three validation forms, the five job workers used by the
-merged BPMN, a local simulated certification service and a local demonstration
-catalogue. The workers use Python's standard library; no Python packages are required.
-The job-worker design follows Week 8 Tutorial, Part 5. This implements the validation
-and certification functionality; the separate inventory workers and DMN remain with
-their existing task owners.
+This folder supplies the validation forms, job workers, simulated certification
+service and local demonstration catalogue. The workers use Python's standard
+library and follow the job-worker design in Week 8 Tutorial, Part 5.
+
+## Sprint 2 connected demo
+
+Run `./camunda/demo/start-local.sh` from the repository root. It expects Camunda Run
+8.9.28 and Java 21 in the local workshop installation, or at the locations set in
+`DESD_CAMUNDA_HOME` and `DESD_JAVA_HOME`. It starts an isolated Camunda instance,
+deploys both operational processes, the certification child and their forms, connects
+the workers and runs the rehearsal. Keep the terminal open to use Operate and Tasklist
+on `127.0.0.1:18080`. The `--check-only` option stops the demo after the checks.
+
+The Validation worker sends `brfn.inventory.product-listed` after publication.
+Inventory maps the two availability dates and initialises the same product.
+The launcher generates a local Inventory copy from the reviewed source, wiring the
+stock update to the demo worker and correcting the copied restock form's ID.
+`models/inventory.bpmn` and `Forms 2/` retain the team's original files. See the
+[connected evidence](../docs/evidence/sprint2/connected-rehearsal.json) for the tested
+publication, initialisation, zero stock, seasonal restock and exception outcomes.
+The local results support the shared rollout, which needs a shared worker and
+catalogue configuration and its own engine verification.
 
 ## Source of truth
 
@@ -87,10 +103,11 @@ service error becomes BPMN `SERVICE_UNAVAILABLE`; an unavailable result is compl
 as `certificationResult = "unavailable"`. A slow request can be cancelled by the
 parent timer; later completion of a cancelled job is handled without recreating it.
 
-Publication writes to `camunda/runtime/catalogue.sqlite3` and is idempotent by product
-ID. It checks validated data and successful certification before storing an organic
-badge. This local catalogue is demonstration persistence, not the team's live
-inventory database. Inventory integration remains a separate task.
+Publication writes to `camunda/runtime/catalogue.sqlite3` by default and is
+idempotent by product ID. It checks validated data and successful certification
+before storing an organic badge. The local demo sets an explicit shared SQLite path
+for its Validation and Inventory workers. Hosted integration requires a shared,
+durable catalogue selected by the team.
 
 ## Submit and correct
 

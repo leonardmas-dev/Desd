@@ -154,6 +154,7 @@ Review approval retries verification; it does not publish.</bpmn:text>
       <bpmn:outgoing>F8</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sendTask id="Task_NotifyPublished" name="Confirm product publication">
+      <bpmn:documentation>After catalogue publication succeeds, send brfn.inventory.product-listed to the separate Inventory process using the product ID, initial stock and availability dates. Also send the correlated publication confirmation to the producer. The Inventory message starts its initialisation path; it does not start an order or a restock.</bpmn:documentation>
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="notify-product-published" />
       </bpmn:extensionElements>

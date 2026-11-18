@@ -225,9 +225,20 @@ class WorkerTests(unittest.TestCase):
         self.assertNotIn("organicClaimed", result)
 
     def test_publication_confirmation_uses_submission_correlation(self):
-        result = self.worker.handle(self.job("notify-product-published"))
+        values = {**self.seasonal_values(), "published": True}
+        result = self.worker.handle(self.job("notify-product-published", values))
         self.assertTrue(result["publicationConfirmed"])
-        self.assertEqual(self.client.events[0][1:3], ("brfn.product.published", "test-submission-001"))
+        self.assertEqual(self.client.events[0], (
+            "message", "brfn.inventory.product-listed", values["productId"],
+            {"productId": values["productId"], "submissionId": values["submissionId"],
+             "stockQuantity": values["stockQuantity"], "availableStart": values["seasonalStartDate"],
+             "availableEnd": values["seasonalEndDate"]}, "inventory-listed-123"))
+        self.assertEqual(self.client.events[1][1:3], ("brfn.product.published", "test-submission-001"))
+
+    def test_unpublished_product_sends_no_handoff_or_confirmation(self):
+        with self.assertRaises(BusinessError):
+            self.worker.handle(self.job("notify-product-published"))
+        self.assertFalse(self.client.events)
 
     def test_new_validation_errors_take_priority_over_previous_invalid_certificate(self):
         values = {**self.values, "validationErrors": ["Description is required."],

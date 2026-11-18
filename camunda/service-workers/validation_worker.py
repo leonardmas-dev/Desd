@@ -277,6 +277,14 @@ class ValidationWorker:
                                 feedback, "correction-" + str(job["jobKey"]))
             return feedback
         if job_type == "notify-product-published":
+            if values.get("published") is not True:
+                raise BusinessError("PUBLICATION_REQUIRED", "Notify only after successful publication")
+            product, _ = normalise_product_dates(values)
+            self.client.publish("brfn.inventory.product-listed", product["productId"],
+                                {key: product[key] for key in (
+                                    "productId", "submissionId", "stockQuantity",
+                                    "availableStart", "availableEnd")},
+                                "inventory-listed-" + str(job["jobKey"]))
             self.client.publish("brfn.product.published", values["submissionId"],
                                 {"productId": values["productId"], "published": True},
                                 "published-" + str(job["jobKey"]))
