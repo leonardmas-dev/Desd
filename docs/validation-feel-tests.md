@@ -204,9 +204,11 @@ The test published the submission message with canonical form-shaped data, `cert
 
 Called child instances **2251799867646258**, **2251799867646304** and **2251799867646351** are shown cancelled in Operate. This establishes cancellation of the called processes, rather than only an offline routing expectation.
 
-Tasklist task **2251799867646398** rendered **ManualCertificationReview** with the product and certificate numbers. Candidate group `marketplace-reviewers` was visible, and Ahmed successfully claimed it. An unchecked review decision was submitted; its subsequent engine route still needs fresh Operate verification. This verifies rendering and assignment for this account, not every intended reviewer's access.
+Tasklist task **2251799867646398** rendered **ManualCertificationReview** with the product and certificate numbers. Candidate group `marketplace-reviewers` was visible, and Ahmed successfully claimed it. An unchecked review decision was submitted. A fresh Operate inspection on 18 November confirms `reviewApproved = false` followed the review decision gateway into the correction path and reached `Task_RequestCorrection`, without publication. The failure count was reset to 0 as defined by the review output mapping. The test instance is now closed; this route evidence does not establish completion of the whole workflow. This verifies rendering and assignment for this account, not every intended reviewer's access.
 
 Evidence is retained under `docs/evidence/validation/2026-11-17/`, including [version-5 timeout/review](evidence/validation/2026-11-17/operate-timeout-review-v5.png), [three cancelled children](evidence/validation/2026-11-17/operate-cancelled-children-v5.png), form deployment confirmations and the Tasklist review form. [Open the parent instance in Operate](https://lhr-1.api.camunda.io/848240b1-573c-4a07-bd52-723bea5b23b7/operate/processes/2251799867646117/variables).
+
+The rejection-route screenshot is retained at [review rejection to correction](evidence/validation/2026-11-18/review-rejection-route.png).
 
 These results do **not** establish a connected Python-worker run or full Card 36 acceptance. No API client was created and no credentials were added to the repository. The client-access decision remains pending.
 
@@ -218,4 +220,17 @@ Leonard's new submission/correction forms supply `seasonalStartDate` / `seasonal
 
 Compatibility regression: **37 local tests passed** on 18 November, including five checks for seasonal-date input, conflicting dates, required description and safe catalogue persistence. These tests use local HTTP fixtures and temporary databases, not the shared engine. The new worker compatibility code has not yet had an authenticated cluster run.
 
-Remaining integration work: verify the latest shared resources after sign-in; agree the description-field change with the form owner; finish Validation's outgoing Inventory notification; connect an authorised worker client; execute the remaining valid/invalid/unavailable/error/review paths with the simulated service; and test the sender/receiver together. The receiver's presence alone does not establish the complete handoff.
+Remaining integration work: agree the description-field change with the form owner; finish Validation's outgoing Inventory notification; connect an authorised worker client; execute the remaining valid/invalid/unavailable/error/review paths with the simulated service; and test the sender/receiver together. The receiver's presence alone does not establish the complete handoff.
+
+
+### Read-only shared-model audit (18 November)
+
+The shared project was inspected after access resumed. Validation had newer edits, with its project listing showing 22:41: a BRFN Platform pool label, a `Test Start` none start event (`Event_15ulqwg`), and script implementations for validation and publication. A downloaded read-only snapshot was compared locally; it was not imported back or used to overwrite the shared resource.
+
+The current validation script uses the new seasonal date keys, but does not check the mandatory description or validate the organic-claim Boolean. The publication script sets `published = true`; it does not demonstrate the persistent catalogue implementation supplied by the local worker. The retained certification call activity is still present. These differences need a coordinated source decision before another shared deployment, so that active team testing is preserved. The creator shown in the project listing does not establish who made the latest edit.
+
+This branch now includes `main` at `1ad55f8`. `models/inventory.bpmn` and every file under `Forms 2/` were compared against that revision and are byte-for-byte unchanged. No Inventory model or original team form was edited, and no shared Camunda resource was overwritten during the 18 November audit.
+
+### Trello status recorded on 18 November
+
+Card 29 is Done: executable configuration, separate form/child deployment, parent activation and invocation of the child have engine evidence. Card 36 remains In review: cancellation, exhausted timeouts and the rejected review route have evidence, but the remaining connected simulated-service scenarios have not passed on the engine. Both cards have a progress comment and relevant screenshots. Completion of Card 29 does not assert completion of the remaining service integration or Inventory handoff.
