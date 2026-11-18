@@ -1,0 +1,87 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.10.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "1921008"
+  },
+  "schemaVersion": 19,
+  "id": "ProduerRestockForm",
+  "components": [
+    {
+      "text": "# Product Restock Form\nItems with * are Required",
+      "type": "text",
+      "layout": {
+        "row": "Row_16ckfl2",
+        "columns": null
+      },
+      "id": "Field_0sc8w2h"
+    },
+    {
+      "label": "Product ID",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_1qn9rbq",
+        "columns": null
+      },
+      "id": "Field_0ftgh4u",
+      "key": "productId",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Quantity",
+      "type": "number",
+      "layout": {
+        "row": "Row_1qn9rbq",
+        "columns": null
+      },
+      "id": "Field_1ytslk4",
+      "key": "restockAmount",
+      "validate": {
+        "required": true,
+        "min": "0"
+      }
+    },
+    {
+      "subtype": "date",
+      "dateLabel": "Availability Start",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_11duwpg",
+        "columns": null
+      },
+      "id": "Field_1ut5gp0",
+      "key": "seasonalStartDate",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "subtype": "date",
+      "dateLabel": "Availability End",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_11duwpg",
+        "columns": null
+      },
+      "id": "Field_1n9rgzj",
+      "key": "seasonalEndDate",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_0ue0lbh",
+        "columns": null
+      },
+      "id": "Field_1vqpma8"
+    }
+  ],
+  "type": "default"
+}
