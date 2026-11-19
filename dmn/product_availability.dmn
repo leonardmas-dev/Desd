@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/"
+             xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+             id="Definitions_product_availability"
+             name="Product availability"
+             namespace="https://brfn.example/dmn"
+             exporter="Camunda Web Modeler"
+             exporterVersion="8.9.0">
+  <decision id="product_availability" name="Product availability">
+    <decisionTable id="DecisionTable_product_availability" hitPolicy="FIRST">
+      <input id="Input_quantity" label="Quantity">
+        <inputExpression id="InputExpression_quantity" typeRef="number">
+          <text>quantity</text>
+        </inputExpression>
+      </input>
+      <input id="Input_inSeason" label="In season">
+        <inputExpression id="InputExpression_inSeason" typeRef="boolean">
+          <text>inSeason</text>
+        </inputExpression>
+      </input>
+      <output id="Output_availability" label="Availability" name="availability" typeRef="string" />
+      <rule id="Rule_available">
+        <inputEntry id="InputEntry_quantity_available">
+          <text>&gt; 0</text>
+        </inputEntry>
+        <inputEntry id="InputEntry_inSeason_available">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_available">
+          <text>"available"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_unavailable">
+        <inputEntry id="InputEntry_quantity_unavailable">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="InputEntry_inSeason_unavailable">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="OutputEntry_unavailable">
+          <text>"unavailable"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>
