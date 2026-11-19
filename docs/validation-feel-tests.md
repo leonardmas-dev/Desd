@@ -1,6 +1,6 @@
 # Validation FEEL Evaluation Record
 
-Current model status (17 November 2026): `Task_VerifyCertification` is now a call activity referencing `Process_ExternalCertification` in `models/certification-verification.bpmn`. The child process contains the `verify-organic-cert` service task. The result, retry, correction and review contracts below remain unchanged. The earlier engine evidence records the previous service-task version; it does not establish runtime acceptance of the reconciled call-activity version. See the reconciliation section at the end of this file for current checks and deployment prerequisites.
+Current status (18 November 2026): the reconciled call-activity parent, certification child and three form IDs were deployed to the development cluster on 17 November. A new version-5 engine instance reached manual review after exactly three timed-out calls, and Operate shows all three called instances cancelled. Tasklist loaded the linked review form and allowed Ahmed to claim it. Validation output was supplied through Test mode; an authenticated Python-worker run is still outstanding. Today's local compatibility change accepts the newer team form date names without changing the Inventory model or original forms. See the final section for details. Earlier undeployed, missing-form and worker-prerequisite statements are historical.
 
 These are actual evaluations with feelin 8.2.0, the evaluator used by the standalone playground linked in the Week 10 FEEL lab. Expressions were read from the current BPMN source. The leading Camunda expression marker was removed for evaluation as instructed by the lab.
 
@@ -152,3 +152,108 @@ These are offline graph, expression, XML and rendering checks. Error propagation
 5. Run new development-engine instances covering valid, invalid, unavailable, explicit error, timeout, exhausted attempts, review approval and review rejection. In Operate verify child completion/error propagation and cancellation after timeout; confirm that no claimed organic product reaches publication without a valid check.
 
 The reconciled source is pushed to `sprint-2-validation-execution` for review. The engine evidence above belongs to the earlier service-task version; the reconciled call-activity version still needs deployment and integrated engine testing. Full Card 36 service-and-form acceptance remains pending these integrations.
+
+## Form and worker integration (17 November 2026, local implementation)
+
+### Captured shared-model differences
+
+The shared Camunda resource had diverged from the merged caller: validation, verification and publication were immediate script tasks. The validation script expected `category`, `unitPrice`, `startDate`, `endDate`, `postcode` and `allergens`, while the shared forms supply `productCategory`, `productPrice`, `availableStart`, `availableEnd`, `productOrigin` and `productAllergen`. An actual form-shaped payload failed that script's validation. Its verification script also defaulted a missing simulated result to `valid` and incremented the failure counter in addition to the retry timer. That counted two unavailable attempts as four failures instead of allowing the agreed three attempts.
+
+The integration keeps the merged call activity and the existing form field names. It does not copy the divergent scripts over the caller. No inventory model, SR model or teammate's shared Camunda resource was edited during this local integration.
+
+### Files and ownership
+
+- `camunda/forms/SubmitProductDetails.form` and `CorrectProductDetails.form` are copies of Leonard's captured shared forms, with a required product description, optional relevant harvest/best-before date inputs and the existing positive initial-quantity rule aligned locally. Existing keys and category values are preserved. `ManualCertificationReview.form` is the captured review form, including its Boolean checkbox. The new local copies need the form owner's review before replacing shared versions.
+- `models/validation.bpmn` links those three IDs and maps `validationMessage` so the correction form can display the feedback. Producer remains non-executable and descriptive; the Marketplace review task is executable. A form reference does not make the Producer pool run in Tasklist.
+- `camunda/service-workers/validation_worker.py` supplies the five existing job types and external-producer submit/correct message commands, using the job-worker approach taught in Week 8. It is a new proposed integration implementation in the area of Card 33, whose team owner remains Thierno. His shared scripts have not been overwritten. The worker validates canonical form keys, calls the simulated HTTP verifier, persists a demonstration catalogue and emits correlated workflow messages. It never defaults an unknown certificate to valid or increments the BPMN failure counter.
+- `camunda/service-workers/mock_certification.py` supplies the case-permitted simulated verification service, including controlled invalid, unavailable, error and delayed outcomes. Its local registry can recover without changing process variables. This is not an official certifier API.
+- `camunda/README.md` gives deployment, existing-client configuration, demonstration commands and engine acceptance scenarios. The local SQLite catalogue demonstrates persistence; it does not integrate the separate live inventory database or replace its owners' tasks. Runtime data is ignored by Git.
+
+### Verification of this integration
+
+`python3 -m unittest discover -s camunda/tests -v`: **32 tests passed**. These cover actual loopback HTTP verification, unknown/missing certificate safety, explicit error and slow-request outcomes, cancelled completion handling, registry outage/recovery, form keys and IDs, Boolean claim validation, required data and dates, correction feedback, message correlation, single counter ownership, publication guards and idempotent SQLite persistence. They use fake Camunda REST responses, not a live engine. A previous certificate error cannot hide a new mandatory-field error after correction.
+
+The actual BPMN expressions were also re-evaluated with feelin 8.2.0: **17 graph scenarios passed, using 340 evaluations**. This is an evaluation count, not 340 distinct cases. The three-unavailable, three-timeout and three-error routes each reach review with count 3. Approval causes a fresh verification attempt; rejection requests correction. Moddle imports have zero warnings; Camunda 8.9 and 8.10 compatibility lint has **zero errors and zero warnings**. The former local missing-review-form warning is resolved. Producer flow signatures and existing parent sequence-flow conditions are preserved. Visible diagram geometry is unchanged, so the existing BPMN exports remain representative.
+
+### Still required for Card 36 acceptance
+
+1. Compare the shared resources again for concurrent team edits, then import the three forms and deploy the called process and parent to the same development cluster and tenant.
+2. Run these workers using an existing authorised cluster API client. Confirm `marketplace-reviewers` assignment and complete both review decisions in Tasklist.
+3. Capture fresh Operate evidence for valid, invalid, unavailable, explicit error, timeout, three exhausted attempts and service recovery after review. Check that the timeout cancels the called child and that no organic product is published without a valid check. Earlier version-2 screenshots cannot substitute for this evidence.
+
+No new shared deployment, live worker run, Tasklist assignment check or full Card 36 acceptance is established by these local results. Inventory workers, inventory integration, DMN and final team submission checks remain separate.
+
+## Reconciled deployment and team-update compatibility (17–18 November 2026)
+
+### Review of Thierno's service snapshot
+
+Thierno's `7952a4f` on `sprint-2-validation-service-tasks` was compared with the corrected caller. All sequence-flow endpoints and conditions match; the snapshot uses immediate scripts for validation, certification and publication instead of the retained worker/call-activity design. Its validator uses the older field aliases, missing simulation input defaults to `valid`, and its verifier increments the counter in addition to the retry timer. The corrected model retains one counter owner and never treats absent verification input as success.
+
+No source on Thierno's branch or on `main` was changed. An unfinished local merge of that older snapshot was cancelled when newer team commits arrived, so that the current team work can be reviewed before any further integration. `models/validation.bpmn` remains the Validation source of truth; the older duplicate at `bpmn/validation.bpmn` and space-suffixed PNG were not introduced into this branch.
+
+### Deployment and engine evidence
+
+Deployed to **UWE Frenchay 2026 / dev, Camunda 8.9+gen27**, on 17 November:
+
+- Parent shared resource: [validation](https://hub.camunda.io/diagrams/f51ad097-61f6-4f4a-9d12-80ddbb64463f--validation/).
+- Child shared resource: [certification-verification](https://hub.camunda.io/diagrams/0dad87d6-8c44-4cb5-a958-266ade58753d--certification-verification/), process ID `Process_ExternalCertification`, engine version 1.
+- Form IDs: `SubmitProductDetails`, `CorrectProductDetails`, `ManualCertificationReview`. The first two were imported as **SubmitProductDetails (Integrated)** and **CorrectProductDetails (Integrated)**, preserving Leonard's original resources. The review form was reused unchanged. Form deployments reported success.
+- Parent process ID `Process_ProductValidation`, engine **version 5**, instance **2251799867646117**, submission ID `AHMED-C29-CALL-20261117-01`.
+
+The test published the submission message with canonical form-shaped data, `certificationTimeout = "PT2S"` and retry base 0.1 seconds. The validation result was manually supplied in Test mode, including `validationMessage`. Certification jobs were deliberately left unanswered. The real engine invoked and interrupted the child three times, then activated `Task_ReviewCertification` with `certificationFailures = 3`. It did not reach publication.
+
+Called child instances **2251799867646258**, **2251799867646304** and **2251799867646351** are shown cancelled in Operate. This establishes cancellation of the called processes, rather than only an offline routing expectation.
+
+Tasklist task **2251799867646398** rendered **ManualCertificationReview** with the product and certificate numbers. Candidate group `marketplace-reviewers` was visible, and Ahmed successfully claimed it. An unchecked review decision was submitted. A fresh Operate inspection on 18 November confirms `reviewApproved = false` followed the review decision gateway into the correction path and reached `Task_RequestCorrection`, without publication. The failure count was reset to 0 as defined by the review output mapping. The test instance is now closed; this route evidence does not establish completion of the whole workflow. This verifies rendering and assignment for this account, not every intended reviewer's access.
+
+Evidence is retained under `docs/evidence/validation/2026-11-17/`, including [version-5 timeout/review](evidence/validation/2026-11-17/operate-timeout-review-v5.png), [three cancelled children](evidence/validation/2026-11-17/operate-cancelled-children-v5.png), form deployment confirmations and the Tasklist review form. [Open the parent instance in Operate](https://lhr-1.api.camunda.io/848240b1-573c-4a07-bd52-723bea5b23b7/operate/processes/2251799867646117/variables).
+
+The rejection-route screenshot is retained at [review rejection to correction](evidence/validation/2026-11-18/review-rejection-route.png).
+
+These results do **not** establish a connected Python-worker run or full Card 36 acceptance. No API client was created and no credentials were added to the repository. The client-access decision remains pending.
+
+### Preserving the newer team work
+
+On 18 November, `main` advanced to **1ad55f8**. Yaseen's Inventory work was merged through PR 3, and Leonard added five original form exports under `Forms 2/`. The Inventory receiver now defines `brfn.inventory.product-listed`, `Start_ProductListed` and worker type `brfn.inventory.initialise`. Its input mappings expect `availableStart` / `availableEnd` and map them to seasonal dates.
+
+Leonard's new submission/correction forms supply `seasonalStartDate` / `seasonalEndDate` and do not yet include a description field. The Validation worker now accepts either date pair and preserves both representations in its demonstration catalogue. If both are supplied with different values, validation requests correction. A missing mandatory description still requests correction; date compatibility does not waive Case 1 requirements. The original team forms and Inventory model are unchanged by this patch.
+
+Compatibility regression: **37 local tests passed** on 18 November, including five checks for seasonal-date input, conflicting dates, required description and safe catalogue persistence. These tests use local HTTP fixtures and temporary databases, not the shared engine. The new worker compatibility code has not yet had an authenticated cluster run.
+
+Remaining integration work: agree the description-field change with the form owner; finish Validation's outgoing Inventory notification; connect an authorised worker client; execute the remaining valid/invalid/unavailable/error/review paths with the simulated service; and test the sender/receiver together. The receiver's presence alone does not establish the complete handoff.
+
+
+### Read-only shared-model audit (18 November)
+
+The shared project was inspected after access resumed. Validation had newer edits, with its project listing showing 22:41: a BRFN Platform pool label, a `Test Start` none start event (`Event_15ulqwg`), and script implementations for validation and publication. A downloaded read-only snapshot was compared locally; it was not imported back or used to overwrite the shared resource.
+
+The current validation script uses the new seasonal date keys, but does not check the mandatory description or validate the organic-claim Boolean. The publication script sets `published = true`; it does not demonstrate the persistent catalogue implementation supplied by the local worker. The retained certification call activity is still present. These differences need a coordinated source decision before another shared deployment, so that active team testing is preserved. The creator shown in the project listing does not establish who made the latest edit.
+
+This branch now includes `main` at `1ad55f8`. `models/inventory.bpmn` and every file under `Forms 2/` were compared against that revision and are byte-for-byte unchanged. No Inventory model or original team form was edited, and no shared Camunda resource was overwritten during the 18 November audit.
+
+### Trello status recorded on 18 November
+
+Card 29 is Done: executable configuration, separate form/child deployment, parent activation and invocation of the child have engine evidence. Card 36 remains In review: cancellation, exhausted timeouts and the rejected review route have evidence, but the remaining connected simulated-service scenarios have not passed on the engine. Both cards have a progress comment and relevant screenshots. Completion of Card 29 does not assert completion of the remaining service integration or Inventory handoff.
+
+
+## Card 36 connected engine verification (18 November 2026)
+
+The isolated Camunda 8.9.28 engine initially rejected the raw Validation BPMN because some incoming and outgoing references and event definitions were out of schema order, and the error definition followed the diagram. These elements were reordered. A structural comparison confirmed that the element values, routes, conditions and diagram geometry are identical. The engine then deployed both BPMN resources and all three forms in deployment `2251799813685318`.
+
+The Python worker ran against the local engine through the REST API and called the repository's simulated certification service over HTTP. Test submissions used the repository CLI and synthetic product data. The checks read engine history and variables and inspected the persisted catalogue. The two review decisions were submitted through the local user task API. Tasklist rendering and assignment in the shared environment were checked separately in the earlier run.
+
+| Check | Observed result |
+| --- | --- |
+| Valid organic certificate | Child completed, product published with organic badge |
+| Non-organic submission | Published without a certification call or badge |
+| Invalid certificate | Reached correction with feedback and no publication |
+| Corrected certificate | Same submission revalidated before publication |
+| Missing product description | Requested correction without certification or publication |
+| Explicit service error and rejected review | Error boundary caught all three errors, then rejection requested correction without publication |
+| Slow verifier | Timer fired on all three attempts, cancelled all three children and opened manual review |
+| HTTP 503 outage | Three unavailable results reached review with failure count 3, without publication |
+| Approved retry after service recovery | A fourth child checked the certificate successfully before publication |
+
+All nine checks passed across seven instances with no incidents. The 37 Python regression tests passed again. The detailed [engine results](evidence/validation/2026-11-18/card-36-engine-results.json), [Operate timeout and review](evidence/validation/2026-11-18/timeout-review-operate.jpg) and [three cancelled calls](evidence/validation/2026-11-18/timeout-children-operate.png) are retained here.
+
+This completes Card 36's simulated service tests. The team still needs to reconcile the newer shared Validation model and run the separate Validation to Inventory handoff. The test used the repository's Validation worker and local Camunda, so a connected run on the shared class cluster remains unverified. The shared model, Inventory and the original team forms were preserved.

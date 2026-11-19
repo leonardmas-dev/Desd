@@ -1,0 +1,66 @@
+[
+  {
+    "step": "Verified publication",
+    "processInstanceKey": "2251799813687584",
+    "productId": "BRFN-DEMO-ed635fea",
+    "published": true,
+    "organicBadge": true
+  },
+  {
+    "step": "Inventory started by publication",
+    "processInstanceKey": "2251799813687738",
+    "productId": "BRFN-DEMO-ed635fea",
+    "inventoryInitialised": true,
+    "stockQuantity": 10,
+    "available": true
+  },
+  {
+    "step": "Order leaves remaining stock",
+    "processInstanceKey": "2251799813687808",
+    "productId": "BRFN-DEMO-ed635fea",
+    "stockQuantity": 7,
+    "available": true
+  },
+  {
+    "step": "Zero stock is unavailable",
+    "processInstanceKey": "2251799813687858",
+    "productId": "BRFN-DEMO-ed635fea",
+    "stockQuantity": 0,
+    "available": false
+  },
+  {
+    "step": "In-season restock restores availability",
+    "processInstanceKey": "2251799813687919",
+    "productId": "BRFN-DEMO-ed635fea",
+    "stockQuantity": 5,
+    "available": true
+  },
+  {
+    "step": "Out-of-season restock stays unavailable",
+    "processInstanceKey": "2251799813687978",
+    "productId": "BRFN-DEMO-ed635fea",
+    "stockQuantity": 7,
+    "available": false
+  },
+  {
+    "step": "Invalid restock asks for correction",
+    "processInstanceKey": "2251799813688042",
+    "productId": "BRFN-DEMO-ed635fea",
+    "stockQuantity": 7,
+    "available": false
+  },
+  {
+    "step": "Unavailable or excessive order reaches investigation",
+    "processInstanceKey": "2251799813688101",
+    "productId": "BRFN-DEMO-ed635fea",
+    "stockQuantity": 7,
+    "available": false
+  },
+  {
+    "step": "Invalid certificate creates no Inventory handoff",
+    "processInstanceKey": "2251799813688182",
+    "productId": "BRFN-DEMO-ed635fea-invalid-cert",
+    "published": false,
+    "inventoryStarted": false
+  }
+]

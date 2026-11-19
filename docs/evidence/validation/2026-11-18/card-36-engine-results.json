@@ -1,0 +1,152 @@
+[
+  {
+    "scenario": "Valid organic certificate",
+    "processInstanceKey": "2251799813685326",
+    "children": [
+      {
+        "key": "2251799813685390",
+        "state": "COMPLETED"
+      }
+    ],
+    "cataloguePublished": true,
+    "organicBadge": true
+  },
+  {
+    "scenario": "Non-organic bypass",
+    "processInstanceKey": "2251799813685488",
+    "children": [],
+    "cataloguePublished": true,
+    "organicBadge": false
+  },
+  {
+    "scenario": "Invalid certificate requests correction",
+    "processInstanceKey": "2251799813685580",
+    "children": [
+      {
+        "key": "2251799813685642",
+        "state": "COMPLETED"
+      }
+    ],
+    "certificationResult": "invalid",
+    "correctionWaiting": true,
+    "cataloguePublished": false
+  },
+  {
+    "scenario": "Corrected certificate is revalidated",
+    "processInstanceKey": "2251799813685580",
+    "children": [
+      {
+        "key": "2251799813685642",
+        "state": "COMPLETED"
+      },
+      {
+        "key": "2251799813685745",
+        "state": "COMPLETED"
+      }
+    ],
+    "validationRuns": 2,
+    "cataloguePublished": true
+  },
+  {
+    "scenario": "Missing mandatory details",
+    "processInstanceKey": "2251799813685833",
+    "children": [],
+    "validationErrors": [
+      "Description is required."
+    ],
+    "cataloguePublished": false
+  },
+  {
+    "scenario": "Explicit service error then review rejection",
+    "processInstanceKey": "2251799813685917",
+    "children": [
+      {
+        "key": "2251799813685982",
+        "state": "TERMINATED"
+      },
+      {
+        "key": "2251799813686035",
+        "state": "TERMINATED"
+      },
+      {
+        "key": "2251799813686085",
+        "state": "TERMINATED"
+      }
+    ],
+    "errorBoundaries": 3,
+    "retryDelays": 3,
+    "userTaskKey": "2251799813686138",
+    "reviewApproved": false,
+    "cataloguePublished": false
+  },
+  {
+    "scenario": "Three timeouts cancel called children",
+    "processInstanceKey": "2251799813686177",
+    "children": [
+      {
+        "key": "2251799813686241",
+        "state": "TERMINATED"
+      },
+      {
+        "key": "2251799813686345",
+        "state": "TERMINATED"
+      },
+      {
+        "key": "2251799813686445",
+        "state": "TERMINATED"
+      }
+    ],
+    "timeoutBoundaries": 3,
+    "retryDelays": 3,
+    "userTaskKey": "2251799813686543",
+    "cataloguePublished": false
+  },
+  {
+    "scenario": "HTTP 503 reaches review after three attempts",
+    "processInstanceKey": "2251799813686560",
+    "children": [
+      {
+        "key": "2251799813686623",
+        "state": "COMPLETED"
+      },
+      {
+        "key": "2251799813686700",
+        "state": "COMPLETED"
+      },
+      {
+        "key": "2251799813686788",
+        "state": "COMPLETED"
+      }
+    ],
+    "retryDelays": 3,
+    "certificationResult": "unavailable",
+    "userTaskKey": "2251799813686864",
+    "cataloguePublished": false
+  },
+  {
+    "scenario": "Review approval triggers fresh verification",
+    "processInstanceKey": "2251799813686560",
+    "children": [
+      {
+        "key": "2251799813686623",
+        "state": "COMPLETED"
+      },
+      {
+        "key": "2251799813686700",
+        "state": "COMPLETED"
+      },
+      {
+        "key": "2251799813686788",
+        "state": "COMPLETED"
+      },
+      {
+        "key": "2251799813686887",
+        "state": "COMPLETED"
+      }
+    ],
+    "userTaskKey": "2251799813686864",
+    "reviewApproved": true,
+    "certificationResult": "valid",
+    "cataloguePublished": true
+  }
+]

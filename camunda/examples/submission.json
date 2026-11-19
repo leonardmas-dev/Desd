@@ -1,0 +1,16 @@
+{
+  "productId": "DEMO-CARROTS-001",
+  "productName": "Bristol carrots",
+  "description": "Fresh carrots grown by a local producer.",
+  "productCategory": "value",
+  "productPrice": 2.5,
+  "stockQuantity": 10,
+  "availableStart": "2026-01-01",
+  "availableEnd": "2026-12-31",
+  "productOrigin": "Bristol",
+  "productAllergen": "None declared",
+  "harvestDate": "2026-11-17",
+  "bestBeforeDate": "2026-11-30",
+  "organicClaimed": true,
+  "organicCertNum": "BRFN-VALID-001"
+}

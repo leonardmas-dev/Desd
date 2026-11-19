@@ -123,3 +123,6 @@ camunda-h2-default.trace.db
 
 # Personal study notes stay outside the repository
 /notes/
+
+# Local demonstration catalogue and worker runtime data
+/camunda/runtime/
