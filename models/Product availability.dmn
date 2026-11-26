@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" id="Definitions_ProductAvailability" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Web Modeler" exporterVersion="6a0669f" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.10.0">
+  <decision id="product_availability" name="Product availability">
+    <decisionTable id="DecisionTable_013sf89" hitPolicy="FIRST">
+      <input id="Input_1" label="Quantity" biodi:width="192">
+        <inputExpression id="InputExpression_1" typeRef="number">
+          <text>quantity</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0dvxpx2" label="in Season">
+        <inputExpression id="LiteralExpression_0faxdig" typeRef="boolean">
+          <text>inSeason</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="availability" name="in season" typeRef="string" />
+      <rule id="DecisionRule_10ezezi">
+        <description></description>
+        <inputEntry id="UnaryTests_0onlip4">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0obyhjf">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_10u3oeq">
+          <text>"available"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0i366ig">
+        <inputEntry id="UnaryTests_1dbmfo3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_07c758v">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1pzzfsy">
+          <text>"unavailable"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="product_availability">
+        <dc:Bounds height="80" width="180" x="310" y="160" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

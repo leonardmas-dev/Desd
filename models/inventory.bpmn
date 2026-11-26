@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InventoryLifecycle" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="1921008" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InventoryLifecycle" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="4c2418b" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
   <bpmn:collaboration id="Collaboration_InventoryManagement" name="Inventory_Management_Operational">
     <bpmn:participant id="Pool_BRFNPlatform" name="BRFN Platform" processRef="Process_InventoryManagement" />
     <bpmn:participant id="Pool_Customer" name="Customer" />
@@ -15,14 +15,11 @@
       <bpmn:lane id="Lane_InventoryManagement" name="Inventory Management">
         <bpmn:flowNodeRef>Gateway_StockDepleted</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>End_ProductStillAvailable</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_UnpublishOutOfStockProduct</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_NotifyProducerZeroStock</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>End_ProductOutOfStock</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Start_CustomerOrderReceived</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>End_SeasonalProductArchived</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_RepublishProduct</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Gateway_SeasonalCheck</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_UpdateStockRecord</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Gateway_RestockDetailsValid</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_DeductInventory</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_CheckRestockDetails</bpmn:flowNodeRef>
@@ -32,10 +29,14 @@
         <bpmn:flowNodeRef>End_ProductAvailable</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_ConfirmStockUpdate</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Boundary_StockDeductionFailed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_InventoryRecordInitialised</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_0s14gu1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UnpublishOutOfStockProduct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InitialiseInventoryRecord</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RepublishProduct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateStockRecord</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Boundary_StockRecordUpdateFailed</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Start_ProductListed</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_InitialiseInventoryRecord</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>End_InventoryRecordInitialised</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_MarketplaceAdmin" name="Marketplace Admin">
         <bpmn:flowNodeRef>Task_InvestigateInventoryError</bpmn:flowNodeRef>
@@ -51,13 +52,6 @@
     <bpmn:endEvent id="End_ProductStillAvailable" name="Product Still Available">
       <bpmn:incoming>F_StockRemaining</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:scriptTask id="Task_UnpublishOutOfStockProduct" name="Make products unavailable when stock reaches zero">
-      <bpmn:extensionElements>
-        <zeebe:script expression="=false" resultVariable="available" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>F_StockDepleted</bpmn:incoming>
-      <bpmn:outgoing>F_UnpublishedToNotification</bpmn:outgoing>
-    </bpmn:scriptTask>
     <bpmn:sendTask id="Task_NotifyProducerZeroStock" name="Notify Producer of Zero Stock">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="notify-producer" retries="3" />
@@ -75,25 +69,11 @@
     <bpmn:endEvent id="End_SeasonalProductArchived" name="Archived Seasonal Product">
       <bpmn:incoming>F_OutsideSeason</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:scriptTask id="Task_RepublishProduct" name="Restore Replenished Stock">
-      <bpmn:extensionElements>
-        <zeebe:script expression="=true" resultVariable="available" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>F_WithinSeason</bpmn:incoming>
-      <bpmn:outgoing>F_RepublishedToConfirmation</bpmn:outgoing>
-    </bpmn:scriptTask>
-    <bpmn:exclusiveGateway id="Gateway_SeasonalCheck" name="Product in Season?" default="F_OutsideSeason">
+    <bpmn:exclusiveGateway id="Gateway_SeasonalCheck" name="Product in Season?">
       <bpmn:incoming>F_CheckSeasonalAvailability</bpmn:incoming>
       <bpmn:outgoing>F_WithinSeason</bpmn:outgoing>
       <bpmn:outgoing>F_OutsideSeason</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:scriptTask id="Task_UpdateStockRecord" name="Update Stock Record">
-      <bpmn:extensionElements>
-        <zeebe:script expression="=stockQuantity + restockQuantity" resultVariable="stockQuantity" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>F_ValidRestock</bpmn:incoming>
-      <bpmn:outgoing>F_CheckSeasonalAvailability</bpmn:outgoing>
-    </bpmn:scriptTask>
     <bpmn:exclusiveGateway id="Gateway_RestockDetailsValid" name="Restock Quantity and Dates Valid?" default="F_InvalidRestock">
       <bpmn:incoming>F_CheckRestockValidity</bpmn:incoming>
       <bpmn:outgoing>F_ValidRestock</bpmn:outgoing>
@@ -152,10 +132,6 @@
       <bpmn:outgoing>F_DeductionError</bpmn:outgoing>
       <bpmn:errorEventDefinition id="ErrorDef_StockDeductionFailed" errorRef="Error_StockDeductionFailed" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Boundary_StockRecordUpdateFailed" name="Record Update Failed" attachedToRef="Task_UpdateStockRecord">
-      <bpmn:outgoing>F_RecordUpdateError</bpmn:outgoing>
-      <bpmn:errorEventDefinition id="ErrorDef_StockRecordUpdateFailed" errorRef="Error_StockRecordUpdateFailed" />
-    </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="F_CheckStockDepletion" sourceRef="Task_DeductInventory" targetRef="Gateway_StockDepleted" />
     <bpmn:sequenceFlow id="F_StockRemaining" name="No" sourceRef="Gateway_StockDepleted" targetRef="End_ProductStillAvailable" />
     <bpmn:sequenceFlow id="F_StockDepleted" name="Yes" sourceRef="Gateway_StockDepleted" targetRef="Task_UnpublishOutOfStockProduct">
@@ -164,7 +140,9 @@
     <bpmn:sequenceFlow id="F_UnpublishedToNotification" sourceRef="Task_UnpublishOutOfStockProduct" targetRef="Task_NotifyProducerZeroStock" />
     <bpmn:sequenceFlow id="F_ZeroStockNotificationComplete" sourceRef="Task_NotifyProducerZeroStock" targetRef="End_ProductOutOfStock" />
     <bpmn:sequenceFlow id="F_OrderToDeduction" sourceRef="Start_CustomerOrderReceived" targetRef="Task_DeductInventory" />
-    <bpmn:sequenceFlow id="F_OutsideSeason" name="No" sourceRef="Gateway_SeasonalCheck" targetRef="End_SeasonalProductArchived" />
+    <bpmn:sequenceFlow id="F_OutsideSeason" name="No" sourceRef="Gateway_SeasonalCheck" targetRef="End_SeasonalProductArchived">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=inSeason = False</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="F_WithinSeason" name="Yes" sourceRef="Gateway_SeasonalCheck" targetRef="Task_RepublishProduct">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=today() &gt;= date(seasonalStartDate) and today() &lt;= date(seasonalEndDate)</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
@@ -187,28 +165,64 @@
       <bpmn:incoming>F_RecordUpdateError</bpmn:incoming>
       <bpmn:outgoing>F_InvestigateInventoryError</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:startEvent id="Start_ProductListed" name="Product Listed">
-      <bpmn:outgoing>F_InitialiseListedProduct</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageDef_ProductListed" messageRef="Msg_ProductListed" />
-    </bpmn:startEvent>
-    <bpmn:sequenceFlow id="F_InitialiseListedProduct" sourceRef="Start_ProductListed" targetRef="Task_InitialiseInventoryRecord" />
+    <bpmn:sequenceFlow id="F_InitialiseListedProduct" sourceRef="Start_ProductListed" targetRef="Activity_0s14gu1" />
+    <bpmn:endEvent id="End_InventoryRecordInitialised" name="Inventory Record Initialised">
+      <bpmn:incoming>Flow_154vjk3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0w63ek7" sourceRef="Activity_0s14gu1" targetRef="Task_InitialiseInventoryRecord" />
+    <bpmn:businessRuleTask id="Activity_0s14gu1" name="Check Product Availability">
+      <bpmn:extensionElements>
+        <zeebe:calledDecision decisionId="product_availability" resultVariable="availability" />
+        <zeebe:ioMapping>
+          <zeebe:input source="==today() &#62;= date(availableStart) and today() &#60;= date(availableEnd)" target="inSeason" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_InitialiseListedProduct</bpmn:incoming>
+      <bpmn:outgoing>Flow_0w63ek7</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:sequenceFlow id="Flow_154vjk3" sourceRef="Task_InitialiseInventoryRecord" targetRef="End_InventoryRecordInitialised" />
+    <bpmn:serviceTask id="Task_UnpublishOutOfStockProduct" name="Make products unavailable when stock reaches zero">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="unpublish-product" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_StockDepleted</bpmn:incoming>
+      <bpmn:outgoing>F_UnpublishedToNotification</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:serviceTask id="Task_InitialiseInventoryRecord" name="Initialise Inventory Record">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
           <zeebe:input source="=availableStart" target="seasonalStartDate" />
           <zeebe:input source="=availableEnd" target="seasonalEndDate" />
         </zeebe:ioMapping>
-        <zeebe:taskDefinition type="brfn.inventory.initialise" retries="3" />
+        <zeebe:taskDefinition type="initialise-inventory" />
       </bpmn:extensionElements>
-      <bpmn:incoming>F_InitialiseListedProduct</bpmn:incoming>
-      <bpmn:outgoing>F_InventoryInitialised</bpmn:outgoing>
+      <bpmn:incoming>Flow_0w63ek7</bpmn:incoming>
+      <bpmn:outgoing>Flow_154vjk3</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="End_InventoryRecordInitialised" name="Inventory Record Initialised">
-      <bpmn:incoming>F_InventoryInitialised</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="F_InventoryInitialised" sourceRef="Task_InitialiseInventoryRecord" targetRef="End_InventoryRecordInitialised" />
+    <bpmn:serviceTask id="Task_RepublishProduct" name="Restore Replenished Stock">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="republish-product" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_WithinSeason</bpmn:incoming>
+      <bpmn:outgoing>F_RepublishedToConfirmation</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_UpdateStockRecord" name="Update Stock Record">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="update-stock-record" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>F_ValidRestock</bpmn:incoming>
+      <bpmn:outgoing>F_CheckSeasonalAvailability</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_StockRecordUpdateFailed" name="Record Update Failed" attachedToRef="Task_UpdateStockRecord">
+      <bpmn:outgoing>F_RecordUpdateError</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorDef_StockRecordUpdateFailed" errorRef="Error_StockRecordUpdateFailed" />
+    </bpmn:boundaryEvent>
+    <bpmn:startEvent id="Start_ProductListed" name="Product Listed">
+      <bpmn:outgoing>F_InitialiseListedProduct</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0tg7hx6" messageRef="Msg_ProductListed" />
+    </bpmn:startEvent>
   </bpmn:process>
-  <bpmn:message id="Msg_CustomerOrder" name="CustomerOrder" />
+  <bpmn:message id="Msg_CustomerOrder" name="brfn.inventory.customer-order" />
   <bpmn:process id="Process_ProducerStockUpdate" isExecutable="false">
     <bpmn:sendTask id="Task_SendStockUpdate" name="Send Stock Update">
       <bpmn:incoming>P_SubmitStockUpdate</bpmn:incoming>
@@ -258,8 +272,8 @@
       <bpmn:outgoing>P_EditStockDetails</bpmn:outgoing>
     </bpmn:exclusiveGateway>
   </bpmn:process>
-  <bpmn:message id="Msg_RestockStarted" name="RestockStarted" />
-  <bpmn:message id="Msg_ZeroStockNotice" name="ZeroStockNotice" />
+  <bpmn:message id="Msg_RestockStarted" name="brfn.inventory.restock-started" />
+  <bpmn:message id="Msg_ZeroStockNotice" name="brfn.inventory.zero-stock-notice" />
   <bpmn:message id="Msg_ProductListed" name="brfn.inventory.product-listed" />
   <bpmn:error id="Error_StockDeductionFailed" name="INVENTORY_DEDUCTION_FAILED" errorCode="INVENTORY_DEDUCTION_FAILED" />
   <bpmn:error id="Error_StockRecordUpdateFailed" name="INVENTORY_UPDATE_FAILED" errorCode="INVENTORY_UPDATE_FAILED" />
@@ -299,10 +313,6 @@
           <dc:Bounds x="600" y="495" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_14qgess_di" bpmnElement="Task_UnpublishOutOfStockProduct">
-        <dc:Bounds x="630" y="600" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1hm0yjr_di" bpmnElement="Task_NotifyProducerZeroStock">
         <dc:Bounds x="800" y="600" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -325,19 +335,11 @@
           <dc:Bounds x="1767" y="665" width="87" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_01wynj9_di" bpmnElement="Task_RepublishProduct">
-        <dc:Bounds x="1790" y="490" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0lby2m8_di" bpmnElement="Gateway_SeasonalCheck" isMarkerVisible="true">
         <dc:Bounds x="1685" y="505" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1680" y="467" width="60" height="27" />
+          <dc:Bounds x="1685" y="455" width="50" height="40" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1d4j2ic_di" bpmnElement="Task_UpdateStockRecord">
-        <dc:Bounds x="1530" y="490" width="100" height="80" />
-        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0bia400_di" bpmnElement="Gateway_RestockDetailsValid" isMarkerVisible="true">
         <dc:Bounds x="1425" y="505" width="50" height="50" />
@@ -395,20 +397,32 @@
           <dc:Bounds x="470" y="882" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0kdukts_di" bpmnElement="Start_ProductListed">
-        <dc:Bounds x="1062" y="622" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_14i6niw_di" bpmnElement="End_InventoryRecordInitialised">
+        <dc:Bounds x="1352" y="622" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1045" y="665" width="71" height="14" />
+          <dc:Bounds x="1328" y="665" width="84" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1gomthx_di" bpmnElement="Task_InitialiseInventoryRecord">
-        <dc:Bounds x="1150" y="600" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_01klpsm_di" bpmnElement="Activity_0s14gu1">
+        <dc:Bounds x="1050" y="600" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_14i6niw_di" bpmnElement="End_InventoryRecordInitialised">
-        <dc:Bounds x="1302" y="622" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_11x4whh_di" bpmnElement="Task_UnpublishOutOfStockProduct">
+        <dc:Bounds x="630" y="600" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ia8qlq_di" bpmnElement="Task_InitialiseInventoryRecord">
+        <dc:Bounds x="1200" y="600" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0q4my70_di" bpmnElement="Task_RepublishProduct">
+        <dc:Bounds x="1790" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0xal5n7_di" bpmnElement="Task_UpdateStockRecord">
+        <dc:Bounds x="1530" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0apwsm5_di" bpmnElement="Start_ProductListed">
+        <dc:Bounds x="922" y="562" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1278" y="665" width="84" height="27" />
+          <dc:Bounds x="905" y="605" width="71" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0or3rmr_di" bpmnElement="Boundary_StockRecordUpdateFailed">
@@ -528,12 +542,17 @@
         <di:waypoint x="2062" y="530" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0mhlhrc_di" bpmnElement="F_InitialiseListedProduct">
-        <di:waypoint x="1098" y="640" />
-        <di:waypoint x="1150" y="640" />
+        <di:waypoint x="958" y="580" />
+        <di:waypoint x="1100" y="580" />
+        <di:waypoint x="1100" y="600" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1xm32tp_di" bpmnElement="F_InventoryInitialised">
-        <di:waypoint x="1250" y="640" />
-        <di:waypoint x="1302" y="640" />
+      <bpmndi:BPMNEdge id="Flow_0w63ek7_di" bpmnElement="Flow_0w63ek7">
+        <di:waypoint x="1150" y="640" />
+        <di:waypoint x="1200" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_154vjk3_di" bpmnElement="Flow_154vjk3">
+        <di:waypoint x="1300" y="640" />
+        <di:waypoint x="1352" y="640" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Participant_0w6h83i_di" bpmnElement="Pool_Customer" isHorizontal="true">
         <dc:Bounds x="160" y="970" width="1978" height="60" />
