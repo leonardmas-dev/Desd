@@ -6,9 +6,11 @@ from pyzeebe import (
     ZeebeWorker,
     ZeebeClient,
     Job,
+    JobController,
     create_camunda_cloud_channel,
     create_insecure_channel,
 )
+from pyzeebe.errors import BusinessError
 
 logging.basicConfig(
     level=logging.INFO,
@@ -56,10 +58,15 @@ def get_zeebe_channel():
     return create_insecure_channel(grpc_address=address)
 
 
-async def on_task_error(exception: Exception, job: Job):
-    """Logs unexpected Python exceptions and fails the Zeebe job so retries can run."""
+async def on_task_error(exception: Exception, job: Job, job_controller: JobController):
+    """Throws a BPMN error for BusinessError, or fails the job for unexpected exceptions."""
+    if isinstance(exception, BusinessError):
+        logger.info("Sending BPMN error '%s' for job %s (%s)", exception.error_code, job.key, job.type)
+        await job_controller.set_error_status(message=str(exception), error_code=exception.error_code)
+        return
+
     logger.error("Unhandled error in job %s (%s): %s", job.key, job.type, exception)
-    await job.set_failure_status(f"Worker exception: {exception}")
+    await job_controller.set_failure_status(f"Worker exception: {exception}")
 
 
 def create_worker(channel) -> ZeebeWorker:
@@ -115,11 +122,7 @@ def create_worker(channel) -> ZeebeWorker:
                 "[deduct-inventory] Throwing BPMN Error INVENTORY_DEDUCTION_FAILED for %s",
                 product_id,
             )
-            await job.set_error_status(
-                error_code="INVENTORY_DEDUCTION_FAILED",
-                message=f"Database error while deducting inventory for {product_id}",
-            )
-            return {}
+            raise BusinessError("INVENTORY_DEDUCTION_FAILED")
 
         record = MOCK_INVENTORY_DB.setdefault(
             product_id,
@@ -140,11 +143,7 @@ def create_worker(channel) -> ZeebeWorker:
                 current_stock,
                 order_qty,
             )
-            await job.set_error_status(
-                error_code="INVENTORY_DEDUCTION_FAILED",
-                message=f"Insufficient stock ({current_stock}) for order quantity ({order_qty})",
-            )
-            return {}
+            raise BusinessError("INVENTORY_DEDUCTION_FAILED")
 
         new_stock = current_stock - order_qty
         record["stockQuantity"] = new_stock
@@ -240,11 +239,7 @@ def create_worker(channel) -> ZeebeWorker:
                 "[update-stock-record] Throwing BPMN Error INVENTORY_UPDATE_FAILED for %s",
                 product_id,
             )
-            await job.set_error_status(
-                error_code="INVENTORY_UPDATE_FAILED",
-                message=f"Failed to persist stock update for {product_id}",
-            )
-            return {}
+            raise BusinessError("INVENTORY_UPDATE_FAILED")
 
         record = MOCK_INVENTORY_DB.setdefault(
             product_id,
